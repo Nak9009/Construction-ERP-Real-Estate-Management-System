@@ -22,7 +22,7 @@ export function DashboardView() {
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <TopNav title="Dashboard Overview" />
+        <TopNav />
         <main className="p-6 md:p-8 flex-1 overflow-y-auto">
           
           <div className="mb-8">
