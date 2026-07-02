@@ -1,36 +1,40 @@
 import axios from 'axios';
-import { useAuthStore } from './store';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
 
-// Request Interceptor to add Auth Token
-api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
-
-// Response Interceptor to handle unauthorized errors
-api.interceptors.response.use((response) => {
-  return response;
-}, (error) => {
-  if (error.response && error.response.status === 401) {
-    useAuthStore.getState().logout();
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Check if there is a tenant context to pass
+    const tenantId = localStorage.getItem('tenant_id');
+    if (tenantId) {
+        config.headers['X-Tenant-ID'] = tenantId;
+    }
+    
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      // window.location.href = '/login'; // Optional: Redirect on 401
+    }
+    return Promise.reject(error);
   }
-  return Promise.reject(error);
-});
+);
 
 export default api;

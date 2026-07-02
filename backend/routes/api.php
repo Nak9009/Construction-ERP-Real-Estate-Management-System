@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\RoleController;
 use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
+use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,10 @@ Route::prefix('v1')->group(function () {
         // Company Settings
         Route::get('/company', [CompanyController::class, 'show']);
         Route::put('/company', [CompanyController::class, 'update']);
+        Route::get('/company/branches', [CompanyController::class, 'indexBranches']);
+        Route::post('/company/branches', [CompanyController::class, 'storeBranch']);
+        Route::get('/company/departments', [CompanyController::class, 'indexDepartments']);
+        Route::post('/company/departments', [CompanyController::class, 'storeDepartment']);
 
         // Projects
         Route::apiResource('projects', ProjectController::class);
@@ -74,6 +79,8 @@ Route::prefix('v1')->group(function () {
         Route::post('workforce/contractors', [WorkforceController::class, 'storeContractor']);
         Route::post('workforce/attendance', [WorkforceController::class, 'logAttendance']);
         Route::post('workforce/daily-reports', [WorkforceController::class, 'submitDailyReport']);
+        Route::get('workforce/skills', [WorkforceController::class, 'indexSkills']);
+        Route::post('workforce/skills', [WorkforceController::class, 'storeSkill']);
 
         // Equipment
         Route::get('equipment', [EquipmentController::class, 'index']);
@@ -93,6 +100,9 @@ Route::prefix('v1')->group(function () {
         Route::get('procurement/purchase-orders', [ProcurementController::class, 'indexPurchaseOrders']);
         Route::post('procurement/purchase-orders', [ProcurementController::class, 'storePurchaseOrder']);
         Route::post('procurement/goods-receipts', [ProcurementController::class, 'recordGoodsReceipt']);
+        Route::get('procurement/rfqs', [ProcurementController::class, 'indexRfqs']);
+        Route::post('procurement/rfqs', [ProcurementController::class, 'storeRfq']);
+        Route::post('procurement/rfqs/responses', [ProcurementController::class, 'storeRfqResponse']);
 
         // Financial
         Route::get('financial/budgets', [FinancialController::class, 'indexBudgets']);
@@ -142,6 +152,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('users', UserController::class);
             Route::apiResource('roles', RoleController::class);
             Route::get('permissions', [RoleController::class, 'permissions']);
+            Route::get('audit-logs', [AuditLogController::class, 'index']);
         });
     });
 });

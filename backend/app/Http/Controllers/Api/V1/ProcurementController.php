@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 use App\Domain\Procurement\Models\Supplier;
 use App\Domain\Procurement\Models\PurchaseOrder;
 use App\Domain\Procurement\Models\Rfq;
+use App\Domain\Procurement\Models\RfqResponse;
 use App\Domain\Procurement\Models\GoodsReceipt;
 use App\Http\Resources\Api\V1\SupplierResource;
 use App\Http\Resources\Api\V1\PurchaseOrderResource;
 use App\Http\Resources\Api\V1\RfqResource;
+use App\Http\Resources\Api\V1\RfqResponseResource;
 use App\Http\Resources\Api\V1\GoodsReceiptResource;
 
 class ProcurementController extends Controller
@@ -110,6 +112,66 @@ class ProcurementController extends Controller
         return response()->json([
             'message' => 'Goods Receipt recorded successfully',
             'goods_receipt' => new GoodsReceiptResource($receipt)
+        ], 201);
+    }
+
+    /**
+     * Display RFQs.
+     */
+    public function indexRfqs(Request $request)
+    {
+        $this->authorize('view_rfqs');
+        
+        $rfqs = Rfq::orderBy('created_at', 'desc')->get();
+        return RfqResource::collection($rfqs);
+    }
+
+    /**
+     * Store an RFQ.
+     */
+    public function storeRfq(Request $request)
+    {
+        $this->authorize('create_rfqs');
+
+        $validated = $request->validate([
+            'project_id' => 'nullable|uuid|exists:projects,id',
+            'rfq_number' => 'required|string|max:255|unique:rfqs,rfq_number',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'issue_date' => 'required|date',
+            'deadline' => 'required|date',
+            'status' => 'nullable|string|in:draft,published,closed,awarded',
+        ]);
+
+        $rfq = Rfq::create($validated);
+
+        return response()->json([
+            'message' => 'RFQ created successfully',
+            'rfq' => new RfqResource($rfq)
+        ], 201);
+    }
+
+    /**
+     * Store an RFQ response.
+     */
+    public function storeRfqResponse(Request $request)
+    {
+        $this->authorize('create_rfq_responses');
+
+        $validated = $request->validate([
+            'rfq_id' => 'required|uuid|exists:rfqs,id',
+            'supplier_id' => 'required|uuid|exists:suppliers,id',
+            'total_amount' => 'required|numeric|min:0',
+            'valid_until' => 'nullable|date',
+            'notes' => 'nullable|string',
+            'status' => 'nullable|string|in:submitted,under_review,accepted,rejected',
+        ]);
+
+        $response = RfqResponse::create($validated);
+
+        return response()->json([
+            'message' => 'RFQ response submitted successfully',
+            'rfq_response' => new RfqResponseResource($response)
         ], 201);
     }
 }

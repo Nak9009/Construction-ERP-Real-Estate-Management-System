@@ -8,10 +8,12 @@ use App\Domain\Workforce\Models\Employee;
 use App\Domain\Workforce\Models\Contractor;
 use App\Domain\Workforce\Models\Attendance;
 use App\Domain\Workforce\Models\DailyReport;
+use App\Domain\Workforce\Models\Skill;
 use App\Http\Resources\Api\V1\EmployeeResource;
 use App\Http\Resources\Api\V1\ContractorResource;
 use App\Http\Resources\Api\V1\AttendanceResource;
 use App\Http\Resources\Api\V1\DailyReportResource;
+use App\Http\Resources\Api\V1\SkillResource;
 
 class WorkforceController extends Controller
 {
@@ -128,6 +130,37 @@ class WorkforceController extends Controller
         return response()->json([
             'message' => 'Daily report submitted successfully',
             'report' => new DailyReportResource($report)
+        ], 201);
+    }
+
+    /**
+     * Display skills.
+     */
+    public function indexSkills(Request $request)
+    {
+        $this->authorize('view_skills');
+        
+        $skills = Skill::orderBy('name', 'asc')->get();
+        return SkillResource::collection($skills);
+    }
+
+    /**
+     * Store a new skill.
+     */
+    public function storeSkill(Request $request)
+    {
+        $this->authorize('manage_skills');
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:skills,name',
+            'description' => 'nullable|string',
+        ]);
+
+        $skill = Skill::create($validated);
+
+        return response()->json([
+            'message' => 'Skill created successfully',
+            'skill' => new SkillResource($skill)
         ], 201);
     }
 }
