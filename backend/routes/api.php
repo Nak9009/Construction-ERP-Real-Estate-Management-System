@@ -128,6 +128,8 @@ Route::prefix('v1')->group(function () {
         Route::get('customers', [CustomerController::class, 'index']);
         Route::post('customers', [CustomerController::class, 'store']);
         Route::get('customers/{customer}', [CustomerController::class, 'show']);
+        Route::put('customers/{customer}', [CustomerController::class, 'update']);
+        Route::delete('customers/{customer}', [CustomerController::class, 'destroy']);
         Route::post('customers/{customer}/family', [CustomerController::class, 'addFamilyMember']);
         Route::post('customers/payment-plans', [CustomerController::class, 'storePaymentPlan']);
         Route::post('customers/installments', [CustomerController::class, 'logInstallment']);
