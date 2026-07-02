@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction ERP & Real Estate Management System - Documentation</title>
+    <!-- Use Tailwind CSS via CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* slate-950 */
+            color: #cbd5e1; /* slate-300 */
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7); /* slate-800 */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5); /* slate-700 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        pre {
+            background-color: #020617; /* slate-950 */
+            border: 1px solid #1e293b; /* slate-800 */
+            border-left: 4px solid #0ea5e9; /* sky-500 */
+        }
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            color: #38bdf8; /* sky-400 */
+            transform: translateX(4px);
+        }
+        h1, h2, h3 {
+            color: #f8fafc; /* slate-50 */
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col md:flex-row">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 glass-panel sticky top-0 h-auto md:h-screen p-6 overflow-y-auto z-10 border-r border-slate-800/50">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-indigo-400">ERP Docs</h2>
+        </div>
+        
+        <nav class="space-y-6">
+            <div>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Getting Started</h3>
+                <ul class="space-y-2">
+                    <li><a href="#introduction" class="nav-link block text-sm flex items-center gap-2">Introduction</a></li>
+                    <li><a href="#prerequisites" class="nav-link block text-sm flex items-center gap-2">Prerequisites</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Installation</h3>
+                <ul class="space-y-2">
+                    <li><a href="#backend-setup" class="nav-link block text-sm flex items-center gap-2">1. Backend (Laravel)</a></li>
+                    <li><a href="#frontend-setup" class="nav-link block text-sm flex items-center gap-2">2. Frontend (Next.js)</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Usage Guide</h3>
+                <ul class="space-y-2">
+                    <li><a href="#starting-app" class="nav-link block text-sm flex items-center gap-2">Starting the App</a></li>
+                    <li><a href="#navigation" class="nav-link block text-sm flex items-center gap-2">System Navigation</a></li>
+                    <li><a href="#modules" class="nav-link block text-sm flex items-center gap-2">Core Modules</a></li>
+                </ul>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 md:p-12 lg:p-16 overflow-y-auto max-w-5xl mx-auto space-y-16">
+        
+        <!-- Header -->
+        <header class="space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-medium">
+                Version 1.0.0
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Construction ERP & <br />
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-indigo-400">Real Estate Management</span>
+            </h1>
+            <p class="text-lg text-slate-400 max-w-2xl leading-relaxed">
+                A comprehensive, modern enterprise resource planning system designed specifically for construction companies and real estate developers to manage their operations seamlessly.
+            </p>
+        </header>
+
+        <!-- Introduction Section -->
+        <section id="introduction" class="scroll-mt-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
+                Introduction
+            </h2>
+            <div class="glass-panel p-6 rounded-xl space-y-4">
+                <p>
+                    This system provides an end-to-end management solution split into two main architectures:
+                </p>
+                <ul class="list-disc pl-6 space-y-2 text-slate-300">
+                    <li><strong>Frontend:</strong> Built with <strong>Next.js 16 (App Router)</strong> and Tailwind CSS, featuring a beautiful glassmorphic UI, responsive layouts, and lightning-fast performance.</li>
+                    <li><strong>Backend:</strong> Powered by <strong>Laravel 12</strong>, providing robust RESTful APIs, database management, and authentication services.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Prerequisites Section -->
+        <section id="prerequisites" class="scroll-mt-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
+                Prerequisites
+            </h2>
+            <p class="mb-4">Before installing the application, ensure your environment meets the following requirements:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-cyan-400 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path></svg>
+                        Backend Server
+                    </h3>
+                    <ul class="list-none space-y-3">
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> PHP >= 8.2</li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Composer 2.x</li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> MySQL 8.0+ or PostgreSQL</li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Laravel Herd / Valet (Optional but recommended for macOS)</li>
+                    </ul>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-indigo-400 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        Frontend Client
+                    </h3>
+                    <ul class="list-none space-y-3">
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> Node.js >= 22.9.0 
+                            <span class="text-xs text-slate-500 ml-2">(Crucial for Next.js 16)</span>
+                        </li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> npm >= 10.x</li>
+                        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> NVM (Node Version Manager) recommended</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Backend Setup -->
+        <section id="backend-setup" class="scroll-mt-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
+                1. Backend Installation (Laravel)
+            </h2>
+            <div class="space-y-6">
+                <div class="glass-panel p-6 rounded-xl">
+                    <p class="mb-4">1. Navigate to the backend directory and install PHP dependencies:</p>
+                    <pre class="p-4 rounded-lg overflow-x-auto text-sm"><code>cd backend
+composer install</code></pre>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl">
+                    <p class="mb-4">2. Configure your environment variables:</p>
+                    <pre class="p-4 rounded-lg overflow-x-auto text-sm"><code>cp .env.example .env
+php artisan key:generate</code></pre>
+                    <p class="mt-4 text-sm text-slate-400">Edit the <code class="text-indigo-400">.env</code> file to set your <code class="text-indigo-400">DB_DATABASE</code>, <code class="text-indigo-400">DB_USERNAME</code>, and <code class="text-indigo-400">DB_PASSWORD</code>.</p>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl">
+                    <p class="mb-4">3. Run database migrations to set up the schema:</p>
+                    <pre class="p-4 rounded-lg overflow-x-auto text-sm"><code>php artisan migrate --seed</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Frontend Setup -->
+        <section id="frontend-setup" class="scroll-mt-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
+                2. Frontend Installation (Next.js)
+            </h2>
+            
+            <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-6 flex gap-4">
+                <div class="text-yellow-500 mt-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div>
+                    <h4 class="text-yellow-500 font-semibold mb-1">Important: Node Version</h4>
+                    <p class="text-sm text-yellow-400/80">You MUST use Node.js version 22 or higher. The build will fail on Node 20.8.0 due to Next.js 16 requirements.</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="glass-panel p-6 rounded-xl">
+                    <p class="mb-4">1. Ensure you are using the correct Node version:</p>
+                    <pre class="p-4 rounded-lg overflow-x-auto text-sm"><code>nvm install 22
+nvm use 22</code></pre>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl">
+                    <p class="mb-4">2. Navigate to the frontend directory and install dependencies:</p>
+                    <pre class="p-4 rounded-lg overflow-x-auto text-sm"><code>cd frontend
+npm install</code></pre>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl">
+                    <p class="mb-4">3. Configure the frontend environment variables (if any) and verify the build:</p>
+                    <pre class="p-4 rounded-lg overflow-x-auto text-sm"><code>npm run build</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Starting the App -->
+        <section id="starting-app" class="scroll-mt-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
+                Starting the Application
+            </h2>
+            <p class="mb-6">To run the system locally, you need to run both the backend API and the frontend development server simultaneously.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-6 rounded-xl border-t-4 border-t-emerald-500">
+                    <h3 class="font-semibold mb-4">Start Backend</h3>
+                    <p class="text-sm text-slate-400 mb-4">In a new terminal tab:</p>
+                    <pre class="p-3 rounded-lg text-sm bg-black"><code>cd backend
+php artisan serve</code></pre>
+                    <p class="text-xs text-slate-500 mt-3">Usually runs on <code>http://localhost:8000</code></p>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-xl border-t-4 border-t-cyan-500">
+                    <h3 class="font-semibold mb-4">Start Frontend</h3>
+                    <p class="text-sm text-slate-400 mb-4">In another terminal tab:</p>
+                    <pre class="p-3 rounded-lg text-sm bg-black"><code>cd frontend
+nvm use 22
+npm run dev</code></pre>
+                    <p class="text-xs text-slate-500 mt-3">Usually runs on <code>http://localhost:3000</code></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation and Usage -->
+        <section id="navigation" class="scroll-mt-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
+                System Navigation
+            </h2>
+            <div class="glass-panel p-6 rounded-xl mb-6">
+                <p class="mb-4">Once you open <code>http://localhost:3000</code>, you will be greeted by the Dashboard. The application is navigated primarily via the left-hand <strong>Sidebar</strong>.</p>
+                
+                <p class="mb-4">The sidebar is highly organized with collapsible sections to keep the interface clean:</p>
+                
+                <ul class="list-disc pl-6 space-y-2 mb-6">
+                    <li><strong>Main:</strong> Core views like Dashboard and Projects.</li>
+                    <li><strong>Real Estate:</strong> Inventory management (Houses, Land), Sales, and Customers.</li>
+                    <li><strong>Construction:</strong> On-site progress, Warranty/Maintenance, and Documents.</li>
+                    <li><strong>Logistics:</strong> Procurement, Warehouse (Inventory), and Equipment tracking.</li>
+                    <li><strong>Finance:</strong> Financial overviews and reporting.</li>
+                    <li><strong>Settings:</strong> Company profile, Users, and Roles management.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Modules -->
+        <section id="modules" class="scroll-mt-12">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 border-b border-slate-800 pb-2">
+                Core Modules Overview
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="glass-panel p-5 rounded-xl flex gap-4 items-start">
+                    <div class="p-3 bg-blue-500/10 rounded-lg text-blue-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-lg">Inventory (Land & Houses)</h4>
+                        <p class="text-sm text-slate-400 mt-1">Manage plots of land, track housing developments, monitor property statuses (Available, Sold, Reserved), and track pricing details.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-5 rounded-xl flex gap-4 items-start">
+                    <div class="p-3 bg-emerald-500/10 rounded-lg text-emerald-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-lg">Sales & Financials</h4>
+                        <p class="text-sm text-slate-400 mt-1">Record transactions, monitor cash flow, generate invoices for property sales, and get a high-level view of company revenue versus expenses.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-5 rounded-xl flex gap-4 items-start">
+                    <div class="p-3 bg-amber-500/10 rounded-lg text-amber-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-lg">Procurement & Warehouse</h4>
+                        <p class="text-sm text-slate-400 mt-1">Generate purchase orders (POs) for raw materials (cement, steel, etc.) and track stock levels in the warehouse. Get alerts when supplies run low.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-5 rounded-xl flex gap-4 items-start">
+                    <div class="p-3 bg-purple-500/10 rounded-lg text-purple-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-lg">Workforce (Employees & Contractors)</h4>
+                        <p class="text-sm text-slate-400 mt-1">Manage human resources. Track internal employees, their roles and departments, as well as external subcontractors and their active contracts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-20 pt-8 border-t border-slate-800 text-center text-sm text-slate-500 pb-12">
+            <p>Designed and built for Modern Construction Enterprise Management.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
