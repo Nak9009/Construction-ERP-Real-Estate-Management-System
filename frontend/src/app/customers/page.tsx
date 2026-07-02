@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Sidebar } from '../dashboard/Sidebar';
-import { TopNav } from '../dashboard/TopNav';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';

@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { Bell, Search, Calendar } from 'lucide-react';
 
-export default function TopNav() {
+export function TopNav() {
   const pathname = usePathname();
   const { user } = useAuthStore();
 
