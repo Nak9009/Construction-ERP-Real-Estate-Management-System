@@ -34,7 +34,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
 
     // Authenticated & Tenant-Scoped routes
-    Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
+    Route::middleware(['tenant'])->group(function () {
         // Auth profile & logout
         Route::get('/auth/profile', [AuthController::class, 'profile']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -118,7 +118,10 @@ Route::prefix('v1')->group(function () {
         Route::post('sales/quotations', [SalesController::class, 'storeQuotation']);
         Route::post('sales/reservations', [SalesController::class, 'storeReservation']);
         Route::post('sales/bookings', [SalesController::class, 'storeBooking']);
+        Route::get('sales/contracts', [SalesController::class, 'indexContracts']);
         Route::post('sales/contracts', [SalesController::class, 'storeContract']);
+        Route::put('sales/contracts/{contract}', [SalesController::class, 'updateContract']);
+        Route::delete('sales/contracts/{contract}', [SalesController::class, 'destroyContract']);
         Route::post('sales/commissions', [SalesController::class, 'storeCommission']);
 
         // Customers

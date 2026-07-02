@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '../dashboard/Sidebar';
 import { TopNav } from '../dashboard/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
@@ -8,25 +8,21 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { api } from '@/lib/api';
 
 interface Project {
-  id: number;
+  id: string;
   name: string;
   status: string;
   budget: number;
   start_date: string;
 }
 
-const INITIAL_PROJECTS: Project[] = [
-  { id: 1, name: 'Riverside Heights', status: 'planning', budget: 1500000, start_date: '2026-08-01' },
-  { id: 2, name: 'Grand Oak Estates', status: 'in_progress', budget: 2500000, start_date: '2026-01-15' },
-  { id: 3, name: 'Sunset Boulevard', status: 'completed', budget: 900000, start_date: '2025-05-10' },
-];
-
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -36,14 +32,30 @@ export default function ProjectsPage() {
     start_date: ''
   });
 
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/projects');
+      setProjects(res.data.data || res.data); // Handles wrapped resources
+    } catch (error) {
+      console.error('Failed to fetch projects', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpenModal = (project?: Project) => {
     if (project) {
       setEditingProject(project);
       setFormData({
         name: project.name,
         status: project.status,
-        budget: project.budget.toString(),
-        start_date: project.start_date
+        budget: project.budget ? project.budget.toString() : '',
+        start_date: project.start_date ? project.start_date.substring(0, 10) : ''
       });
     } else {
       setEditingProject(null);
@@ -57,32 +69,38 @@ export default function ProjectsPage() {
     setEditingProject(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingProject) {
-      setProjects(projects.map(p => p.id === editingProject.id ? { 
-        ...p, 
-        name: formData.name, 
-        status: formData.status, 
-        budget: Number(formData.budget), 
-        start_date: formData.start_date 
-      } : p));
-    } else {
-      const newProject: Project = {
-        id: Math.max(...projects.map(p => p.id), 0) + 1,
+    try {
+      const payload = {
         name: formData.name,
         status: formData.status,
         budget: Number(formData.budget),
         start_date: formData.start_date
       };
-      setProjects([...projects, newProject]);
+
+      if (editingProject) {
+        await api.put(`/projects/${editingProject.id}`, payload);
+      } else {
+        await api.post('/projects', payload);
+      }
+      
+      await fetchProjects();
+      handleCloseModal();
+    } catch (error) {
+      console.error('Failed to save project', error);
+      alert('Failed to save project. See console for details.');
     }
-    handleCloseModal();
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
-      setProjects(projects.filter(p => p.id !== id));
+      try {
+        await api.delete(`/projects/${id}`);
+        await fetchProjects();
+      } catch (error) {
+        console.error('Failed to delete project', error);
+      }
     }
   };
 
@@ -116,30 +134,35 @@ export default function ProjectsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
-                    {projects.map((p) => (
-                      <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 font-medium">{p.name}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            p.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
-                            p.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' :
-                            'bg-neutral-500/20 text-neutral-400'
-                          }`}>
-                            {p.status.replace('_', ' ').toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">${p.budget.toLocaleString()}</td>
-                        <td className="px-6 py-4">{p.start_date}</td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                          <Button variant="ghost" className="text-xs py-1 px-3 text-blue-400" onClick={() => handleOpenModal(p)}>Edit</Button>
-                          <Button variant="ghost" className="text-xs py-1 px-3 text-red-400" onClick={() => handleDelete(p.id)}>Delete</Button>
-                        </td>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">Loading projects...</td>
                       </tr>
-                    ))}
-                    {projects.length === 0 && (
+                    ) : projects.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">No projects found. Create one to get started.</td>
                       </tr>
+                    ) : (
+                      projects.map((p) => (
+                        <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                          <td className="px-6 py-4 font-medium">{p.name}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              p.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
+                              p.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' :
+                              'bg-neutral-500/20 text-neutral-400'
+                            }`}>
+                              {p.status ? p.status.replace('_', ' ').toUpperCase() : 'UNKNOWN'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">${p.budget ? Number(p.budget).toLocaleString() : '0'}</td>
+                          <td className="px-6 py-4">{p.start_date ? p.start_date.substring(0, 10) : 'N/A'}</td>
+                          <td className="px-6 py-4 text-right space-x-2">
+                            <Button variant="ghost" className="text-xs py-1 px-3 text-blue-400" onClick={() => handleOpenModal(p)}>Edit</Button>
+                            <Button variant="ghost" className="text-xs py-1 px-3 text-red-400" onClick={() => handleDelete(p.id)}>Delete</Button>
+                          </td>
+                        </tr>
+                      ))
                     )}
                   </tbody>
                 </table>

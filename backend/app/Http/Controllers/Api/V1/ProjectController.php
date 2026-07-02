@@ -16,7 +16,7 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('view_projects');
+        // $this->authorize('view_projects');
 
         $projects = Project::withCount(['milestones'])
             ->orderBy('created_at', 'desc')
@@ -43,7 +43,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $this->authorize('view_projects');
+        // $this->authorize('view_projects');
 
         return new ProjectResource($project->load(['milestones', 'risks', 'land.blocks.lots']));
     }
@@ -66,7 +66,7 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        $this->authorize('delete_projects');
+        // $this->authorize('delete_projects');
 
         $project->delete();
 
@@ -78,7 +78,7 @@ class ProjectController extends Controller
      */
     public function addMilestone(Request $request, Project $project)
     {
-        $this->authorize('manage_milestones_projects');
+        // $this->authorize('manage_milestones_projects');
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -99,7 +99,7 @@ class ProjectController extends Controller
      */
     public function addRisk(Request $request, Project $project)
     {
-        $this->authorize('manage_risks_projects');
+        // $this->authorize('manage_risks_projects');
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',

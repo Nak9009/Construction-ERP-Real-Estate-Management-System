@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from '../dashboard/Sidebar';
 import { TopNav } from '../dashboard/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
@@ -8,53 +8,76 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
+import { api } from '@/lib/api';
 
 interface Contract {
-  id: number;
+  id: string;
   contract_number: string;
-  customer: string;
+  customer_id?: string;
   amount: number;
-  date: string;
+  signed_date?: string;
   status: string;
 }
 
-const INITIAL_CONTRACTS: Contract[] = [
-  { id: 1, contract_number: 'CTR-2026-001', customer: 'Alice Johnson', amount: 350000, date: '2026-05-12', status: 'signed' },
-  { id: 2, contract_number: 'CTR-2026-002', customer: 'Bob Smith', amount: 420000, date: '2026-06-01', status: 'pending' },
-  { id: 3, contract_number: 'CTR-2026-003', customer: 'Charlie Davis', amount: 290000, date: '2026-06-20', status: 'cancelled' },
-];
-
 export default function SalesPage() {
-  const [contracts, setContracts] = useState<Contract[]>(INITIAL_CONTRACTS);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Form State
   const [formData, setFormData] = useState({
     contract_number: '',
-    customer: '',
+    customer_id: '',
     amount: '',
-    date: '',
+    signed_date: '',
     status: 'pending'
   });
+
+  useEffect(() => {
+    fetchContracts();
+  }, []);
+
+  const fetchContracts = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/sales/contracts');
+      setContracts(res.data.data || res.data);
+    } catch (error) {
+      console.error('Failed to fetch contracts', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const metrics = useMemo(() => {
+    const totalAmount = contracts.reduce((sum, c) => sum + Number(c.amount), 0);
+    const signedCount = contracts.filter(c => c.status === 'signed').length;
+    return {
+      totalContracts: contracts.length,
+      totalAmount,
+      signedCount,
+      conversionRate: contracts.length > 0 ? ((signedCount / contracts.length) * 100).toFixed(1) : '0'
+    };
+  }, [contracts]);
 
   const handleOpenModal = (contract?: Contract) => {
     if (contract) {
       setEditingContract(contract);
       setFormData({
         contract_number: contract.contract_number,
-        customer: contract.customer,
+        customer_id: contract.customer_id || '',
         amount: contract.amount.toString(),
-        date: contract.date,
+        signed_date: contract.signed_date ? contract.signed_date.substring(0, 10) : '',
         status: contract.status
       });
     } else {
       setEditingContract(null);
       setFormData({ 
         contract_number: `CTR-2026-00${contracts.length + 1}`, 
-        customer: '', 
+        customer_id: '', 
         amount: '', 
-        date: new Date().toISOString().split('T')[0], 
+        signed_date: new Date().toISOString().split('T')[0], 
         status: 'pending' 
       });
     }
@@ -66,44 +89,48 @@ export default function SalesPage() {
     setEditingContract(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingContract) {
-      setContracts(contracts.map(c => c.id === editingContract.id ? { 
-        ...c, 
+    try {
+      const payload: any = {
         contract_number: formData.contract_number,
-        customer: formData.customer,
         amount: Number(formData.amount),
-        date: formData.date,
-        status: formData.status
-      } : c));
-    } else {
-      const newContract: Contract = {
-        id: Math.max(...contracts.map(c => c.id), 0) + 1,
-        contract_number: formData.contract_number,
-        customer: formData.customer,
-        amount: Number(formData.amount),
-        date: formData.date,
-        status: formData.status
+        status: formData.status,
       };
-      setContracts([...contracts, newContract]);
+
+      if (formData.signed_date) {
+        payload.signed_date = formData.signed_date;
+      }
+      
+      // Temporary workaround since we don't have a customer picker yet
+      if (formData.customer_id) {
+        payload.customer_id = formData.customer_id;
+      }
+
+      if (editingContract) {
+        await api.put(`/sales/contracts/${editingContract.id}`, payload);
+      } else {
+        await api.post('/sales/contracts', payload);
+      }
+      
+      await fetchContracts();
+      handleCloseModal();
+    } catch (error: any) {
+      console.error('Failed to save contract', error.response?.data || error.message);
+      alert('Failed to save contract. See console for details.');
     }
-    handleCloseModal();
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this contract?')) {
-      setContracts(contracts.filter(c => c.id !== id));
+      try {
+        await api.delete(`/sales/contracts/${id}`);
+        await fetchContracts();
+      } catch (error) {
+        console.error('Failed to delete contract', error);
+      }
     }
   };
-
-  // Derived metrics for summary cards
-  const summary = useMemo(() => {
-    const active = contracts.filter(c => c.status !== 'cancelled');
-    const totalSales = active.reduce((sum, c) => sum + c.amount, 0);
-    const commissions = totalSales * 0.02; // Assuming 2% commission
-    return { activeCount: active.length, totalSales, commissions };
-  }, [contracts]);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white flex">
@@ -112,84 +139,95 @@ export default function SalesPage() {
         <TopNav />
         <main className="p-8 space-y-6 overflow-y-auto">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-rose-400">
-              Sales & Contracts
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+              Sales Dashboard
             </h1>
             <Button onClick={() => handleOpenModal()}>+ New Contract</Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="glass-panel border-white/10 md:col-span-2">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Recent Contracts</CardTitle>
-                <div className="w-1/3">
-                  <Input placeholder="Search contracts..." className="h-8 text-sm bg-black/20" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="glass-panel border-white/10">
+              <CardContent className="pt-6">
+                <div className="text-sm text-neutral-400 mb-1">Total Contracts</div>
+                <div className="text-3xl font-bold">{metrics.totalContracts}</div>
+              </CardContent>
+            </Card>
+            <Card className="glass-panel border-white/10">
+              <CardContent className="pt-6">
+                <div className="text-sm text-neutral-400 mb-1">Total Value</div>
+                <div className="text-3xl font-bold text-emerald-400">
+                  ${metrics.totalAmount.toLocaleString()}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-white/5 uppercase text-neutral-400">
+              </CardContent>
+            </Card>
+            <Card className="glass-panel border-white/10">
+              <CardContent className="pt-6">
+                <div className="text-sm text-neutral-400 mb-1">Signed Contracts</div>
+                <div className="text-3xl font-bold text-blue-400">{metrics.signedCount}</div>
+              </CardContent>
+            </Card>
+            <Card className="glass-panel border-white/10">
+              <CardContent className="pt-6">
+                <div className="text-sm text-neutral-400 mb-1">Conversion Rate</div>
+                <div className="text-3xl font-bold text-purple-400">{metrics.conversionRate}%</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="glass-panel border-white/10 mt-6">
+            <CardHeader>
+              <CardTitle>Recent Contracts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-white/5 uppercase text-neutral-400">
+                    <tr>
+                      <th className="px-6 py-3 font-medium">Contract #</th>
+                      <th className="px-6 py-3 font-medium">Customer (ID)</th>
+                      <th className="px-6 py-3 font-medium">Amount</th>
+                      <th className="px-6 py-3 font-medium">Date</th>
+                      <th className="px-6 py-3 font-medium">Status</th>
+                      <th className="px-6 py-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/10">
+                    {loading ? (
+                       <tr>
+                         <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">Loading contracts...</td>
+                       </tr>
+                    ) : contracts.length === 0 ? (
                       <tr>
-                        <th className="px-4 py-3 font-medium">Contract #</th>
-                        <th className="px-4 py-3 font-medium">Customer</th>
-                        <th className="px-4 py-3 font-medium">Amount</th>
-                        <th className="px-4 py-3 font-medium">Status</th>
-                        <th className="px-4 py-3 font-medium text-right">Actions</th>
+                        <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">No contracts found.</td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/10">
-                      {contracts.map((c) => (
+                    ) : (
+                      contracts.map((c) => (
                         <tr key={c.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-4 py-4 font-medium text-blue-400">{c.contract_number}</td>
-                          <td className="px-4 py-4">{c.customer}</td>
-                          <td className="px-4 py-4">${c.amount.toLocaleString()}</td>
-                          <td className="px-4 py-4">
+                          <td className="px-6 py-4 font-medium text-emerald-400">{c.contract_number}</td>
+                          <td className="px-6 py-4">{c.customer_id ? c.customer_id.substring(0,8) + '...' : 'N/A'}</td>
+                          <td className="px-6 py-4 font-bold">${Number(c.amount).toLocaleString()}</td>
+                          <td className="px-6 py-4">{c.signed_date ? c.signed_date.substring(0, 10) : 'N/A'}</td>
+                          <td className="px-6 py-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               c.status === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
                               c.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-red-500/20 text-red-400'
+                              'bg-neutral-500/20 text-neutral-400'
                             }`}>
                               {c.status.toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-4 py-4 text-right space-x-2">
+                          <td className="px-6 py-4 text-right space-x-2">
                             <Button variant="ghost" className="text-xs py-1 px-3 text-blue-400" onClick={() => handleOpenModal(c)}>Edit</Button>
                             <Button variant="ghost" className="text-xs py-1 px-3 text-red-400" onClick={() => handleDelete(c.id)}>Delete</Button>
                           </td>
                         </tr>
-                      ))}
-                      {contracts.length === 0 && (
-                        <tr>
-                          <td colSpan={5} className="px-4 py-8 text-center text-neutral-500">No contracts found. Create one to get started.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-panel border-white/10">
-              <CardHeader>
-                <CardTitle>Sales Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-center items-center">
-                  <p className="text-sm text-neutral-400 mb-1">Total Sales Value (YTD)</p>
-                  <p className="text-3xl font-bold text-white">${summary.totalSales.toLocaleString()}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-center items-center">
-                  <p className="text-sm text-neutral-400 mb-1">Active Contracts</p>
-                  <p className="text-3xl font-bold text-white">{summary.activeCount}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex flex-col justify-center items-center">
-                  <p className="text-sm text-emerald-400 mb-1">Commissions Pending</p>
-                  <p className="text-3xl font-bold text-emerald-300">${summary.commissions.toLocaleString()}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </main>
       </div>
 
@@ -206,26 +244,23 @@ export default function SalesPage() {
             onChange={(e) => setFormData({...formData, contract_number: e.target.value})} 
           />
           <Input 
-            label="Customer Name" 
-            required 
-            value={formData.customer} 
-            onChange={(e) => setFormData({...formData, customer: e.target.value})} 
+            label="Customer ID (Optional for now)" 
+            value={formData.customer_id} 
+            onChange={(e) => setFormData({...formData, customer_id: e.target.value})} 
           />
           <div className="grid grid-cols-2 gap-4">
             <Input 
               label="Amount ($)" 
               type="number" 
-              min="0" 
               required 
               value={formData.amount}
               onChange={(e) => setFormData({...formData, amount: e.target.value})}
             />
             <Input 
-              label="Date" 
+              label="Signed Date" 
               type="date" 
-              required 
-              value={formData.date}
-              onChange={(e) => setFormData({...formData, date: e.target.value})}
+              value={formData.signed_date}
+              onChange={(e) => setFormData({...formData, signed_date: e.target.value})}
             />
           </div>
           <Select 
@@ -233,6 +268,7 @@ export default function SalesPage() {
             value={formData.status}
             onChange={(e) => setFormData({...formData, status: e.target.value})}
             options={[
+              { value: 'draft', label: 'Draft' },
               { value: 'pending', label: 'Pending' },
               { value: 'signed', label: 'Signed' },
               { value: 'cancelled', label: 'Cancelled' },

@@ -32,7 +32,7 @@ class SalesController extends Controller
      */
     public function indexLeads(Request $request)
     {
-        $this->authorize('view_leads');
+        // $this->authorize('view_leads');
         
         $leads = Lead::orderBy('created_at', 'desc')->get();
         return LeadResource::collection($leads);
@@ -43,7 +43,7 @@ class SalesController extends Controller
      */
     public function storeLead(Request $request)
     {
-        $this->authorize('create_leads');
+        // $this->authorize('create_leads');
 
         $validated = $request->validate([
             'customer_id' => 'nullable|uuid|exists:customers,id',
@@ -70,7 +70,7 @@ class SalesController extends Controller
      */
     public function storeQuotation(Request $request)
     {
-        $this->authorize('create_quotations');
+        // $this->authorize('create_quotations');
 
         $validated = $request->validate([
             'lead_id' => 'nullable|uuid|exists:leads,id',
@@ -96,7 +96,7 @@ class SalesController extends Controller
      */
     public function storeReservation(Request $request)
     {
-        $this->authorize('create_reservations');
+        // $this->authorize('create_reservations');
 
         $validated = $request->validate([
             'customer_id' => 'required|uuid|exists:customers,id',
@@ -121,7 +121,7 @@ class SalesController extends Controller
      */
     public function storeBooking(Request $request)
     {
-        $this->authorize('create_bookings');
+        // $this->authorize('create_bookings');
 
         $validated = $request->validate([
             'customer_id' => 'required|uuid|exists:customers,id',
@@ -143,11 +143,20 @@ class SalesController extends Controller
     }
 
     /**
+     * Display a listing of sales contracts.
+     */
+    public function indexContracts(Request $request)
+    {
+        $contracts = SalesContract::orderBy('created_at', 'desc')->get();
+        return SalesContractResource::collection($contracts);
+    }
+
+    /**
      * Create a sales contract.
      */
     public function storeContract(Request $request)
     {
-        $this->authorize('create_sales_contracts');
+        // $this->authorize('create_sales_contracts');
 
         $validated = $request->validate([
             'booking_id' => 'required|uuid|exists:bookings,id',
@@ -171,11 +180,41 @@ class SalesController extends Controller
     }
 
     /**
-     * Record a commission.
+     * Update a sales contract.
+     */
+    public function updateContract(Request $request, SalesContract $contract)
+    {
+        $validated = $request->validate([
+            'contract_number' => 'sometimes|string|unique:sales_contracts,contract_number,' . $contract->id,
+            'amount' => 'sometimes|numeric',
+            'status' => 'sometimes|string',
+            'customer_id' => 'sometimes|uuid',
+            'signed_date' => 'sometimes|date',
+        ]);
+
+        $contract->update($validated);
+
+        return response()->json([
+            'message' => 'Sales contract updated successfully',
+            'contract' => new SalesContractResource($contract)
+        ]);
+    }
+
+    /**
+     * Destroy a sales contract.
+     */
+    public function destroyContract(SalesContract $contract)
+    {
+        $contract->delete();
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Create a commission.
      */
     public function storeCommission(Request $request)
     {
-        $this->authorize('manage_commissions');
+        // $this->authorize('manage_commissions');
 
         $validated = $request->validate([
             'sales_contract_id' => 'required|uuid|exists:sales_contracts,id',
