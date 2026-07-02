@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { AdminLayout } from '../../components/layout/AdminLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Users, Building2, DollarSign, Wrench } from 'lucide-react';
 import api from '../../lib/api';
 import { DashboardMetrics } from '../../types';

@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { PackageSearch, AlertCircle, TrendingDown } from 'lucide-react';
 
@@ -19,35 +19,6 @@ const MOCK_DATA = [
 export default function WarehousePage() {
   const [data] = useState(MOCK_DATA);
 
-  const columns = [
-    { header: 'SKU', accessor: 'sku' as const, className: 'font-mono text-xs text-slate-400' },
-    { header: 'Item Name', accessor: 'name' as const, className: 'font-medium text-white' },
-    { 
-      header: 'Stock Level', 
-      accessor: (item: any) => `${item.quantity} ${item.unit}`
-    },
-    { header: 'Min Stock', accessor: 'minStock' as const },
-    { 
-      header: 'Status', 
-      accessor: (item: any) => (
-        <Badge variant={
-          item.status === 'in_stock' ? 'success' : 
-          item.status === 'low_stock' ? 'warning' : 
-          'error'
-        }>
-          {item.status.replace(/_/g, ' ')}
-        </Badge>
-      ) 
-    },
-    { 
-      header: 'Actions', 
-      accessor: (item: any) => (
-        <div className="flex gap-2">
-          <Button variant="ghost" className="h-8 text-cyan-400 hover:text-cyan-300">Restock</Button>
-        </div>
-      ) 
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
@@ -84,9 +55,48 @@ export default function WarehousePage() {
             <CardHeader className="border-b border-slate-800/50 pb-4">
               <CardTitle>Material Stock List</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table columns={columns} data={data} keyExtractor={(item) => item.id} />
-            </CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Item Name</TableHead>
+                      <TableHead>Stock Level</TableHead>
+                      <TableHead>Min Stock</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">No materials found.</TableCell>
+                      </TableRow>
+                    ) : (
+                      data.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-mono text-xs text-slate-400">{item.sku}</TableCell>
+                          <TableCell className="font-medium text-white">{item.name}</TableCell>
+                          <TableCell>{item.quantity} {item.unit}</TableCell>
+                          <TableCell>{item.minStock}</TableCell>
+                          <TableCell>
+                            <Badge variant={
+                              item.status === 'in_stock' ? 'default' : 
+                              item.status === 'low_stock' ? 'secondary' : 
+                              'destructive'
+                            }>
+                              {item.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="h-8 text-cyan-400 hover:text-cyan-300">Restock</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
           </Card>
         </main>
       </div>

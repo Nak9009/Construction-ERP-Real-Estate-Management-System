@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { api } from '@/lib/api';
 
 interface Customer {
@@ -87,6 +89,14 @@ export default function CustomersPage() {
     setEditingCustomer(null);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleCloseModal();
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -158,90 +168,101 @@ export default function CustomersPage() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-white/5 uppercase text-neutral-400">
-                    <tr>
-                      <th className="px-6 py-3 font-medium">Name</th>
-                      <th className="px-6 py-3 font-medium">Email</th>
-                      <th className="px-6 py-3 font-medium">Phone</th>
-                      <th className="px-6 py-3 font-medium">ID/Passport</th>
-                      <th className="px-6 py-3 font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>ID/Passport</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {loading ? (
-                       <tr>
-                         <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">Loading customers...</td>
-                       </tr>
+                       <TableRow>
+                         <TableCell colSpan={5} className="h-24 text-center">Loading customers...</TableCell>
+                       </TableRow>
                     ) : customers.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">No customers found.</td>
-                      </tr>
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">No customers found.</TableCell>
+                      </TableRow>
                     ) : (
                       customers.map((c) => (
-                        <tr key={c.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 font-medium text-emerald-400">{c.first_name} {c.last_name}</td>
-                          <td className="px-6 py-4">{c.email || 'N/A'}</td>
-                          <td className="px-6 py-4">{c.phone || 'N/A'}</td>
-                          <td className="px-6 py-4">{c.identity_card_number || 'N/A'}</td>
-                          <td className="px-6 py-4 text-right space-x-2">
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-blue-400" onClick={() => handleOpenModal(c)}>Edit</Button>
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-red-400" onClick={() => handleDelete(c.id)}>Delete</Button>
-                          </td>
-                        </tr>
+                        <TableRow key={c.id}>
+                          <TableCell className="font-medium text-emerald-400">{c.first_name} {c.last_name}</TableCell>
+                          <TableCell>{c.email || 'N/A'}</TableCell>
+                          <TableCell>{c.phone || 'N/A'}</TableCell>
+                          <TableCell>{c.identity_card_number || 'N/A'}</TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button variant="ghost" size="sm" className="text-blue-400" onClick={() => handleOpenModal(c)}>Edit</Button>
+                            <Button variant="ghost" size="sm" className="text-red-400" onClick={() => handleDelete(c.id)}>Delete</Button>
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
         </main>
       </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
-        title={editingCustomer ? 'Edit Customer' : 'Create New Customer'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              label="First Name" 
-              required 
-              value={formData.first_name} 
-              onChange={(e) => setFormData({...formData, first_name: e.target.value})} 
-            />
-            <Input 
-              label="Last Name" 
-              required 
-              value={formData.last_name} 
-              onChange={(e) => setFormData({...formData, last_name: e.target.value})} 
-            />
-          </div>
-          <Input 
-            label="Email Address" 
-            type="email"
-            value={formData.email} 
-            onChange={(e) => setFormData({...formData, email: e.target.value})} 
-          />
-          <Input 
-            label="Phone Number" 
-            type="tel"
-            value={formData.phone} 
-            onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-          />
-          <Input 
-            label="Identity Card / Passport Number" 
-            value={formData.identity_card_number} 
-            onChange={(e) => setFormData({...formData, identity_card_number: e.target.value})} 
-          />
-          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-white/10">
-            <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
-            <Button type="submit">{editingCustomer ? 'Save Changes' : 'Create Customer'}</Button>
-          </div>
-        </form>
-      </Modal>
+      <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingCustomer ? 'Edit Customer' : 'Create New Customer'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>First Name</Label>
+                <Input 
+                  required 
+                  value={formData.first_name} 
+                  onChange={(e) => setFormData({...formData, first_name: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Last Name</Label>
+                <Input 
+                  required 
+                  value={formData.last_name} 
+                  onChange={(e) => setFormData({...formData, last_name: e.target.value})} 
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Email Address</Label>
+              <Input 
+                type="email"
+                value={formData.email} 
+                onChange={(e) => setFormData({...formData, email: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone Number</Label>
+              <Input 
+                type="tel"
+                value={formData.phone} 
+                onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Identity Card / Passport Number</Label>
+              <Input 
+                value={formData.identity_card_number} 
+                onChange={(e) => setFormData({...formData, identity_card_number: e.target.value})} 
+              />
+            </div>
+            <DialogFooter className="mt-6 pt-4 border-t border-white/10">
+              <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
+              <Button type="submit">{editingCustomer ? 'Save Changes' : 'Create Customer'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

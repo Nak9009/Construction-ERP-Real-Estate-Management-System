@@ -3,11 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
-import { Select } from '@/components/ui/Select';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { api } from '@/lib/api';
 
 interface Contract {
@@ -87,6 +89,14 @@ export default function SalesPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingContract(null);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleCloseModal();
+    } else {
+      setIsModalOpen(true);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -180,34 +190,34 @@ export default function SalesPage() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-white/5 uppercase text-neutral-400">
-                    <tr>
-                      <th className="px-6 py-3 font-medium">Contract #</th>
-                      <th className="px-6 py-3 font-medium">Customer (ID)</th>
-                      <th className="px-6 py-3 font-medium">Amount</th>
-                      <th className="px-6 py-3 font-medium">Date</th>
-                      <th className="px-6 py-3 font-medium">Status</th>
-                      <th className="px-6 py-3 font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Contract #</TableHead>
+                      <TableHead>Customer (ID)</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {loading ? (
-                       <tr>
-                         <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">Loading contracts...</td>
-                       </tr>
+                       <TableRow>
+                         <TableCell colSpan={6} className="h-24 text-center">Loading contracts...</TableCell>
+                       </TableRow>
                     ) : contracts.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">No contracts found.</td>
-                      </tr>
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">No contracts found.</TableCell>
+                      </TableRow>
                     ) : (
                       contracts.map((c) => (
-                        <tr key={c.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 font-medium text-emerald-400">{c.contract_number}</td>
-                          <td className="px-6 py-4">{c.customer_id ? c.customer_id.substring(0,8) + '...' : 'N/A'}</td>
-                          <td className="px-6 py-4 font-bold">${Number(c.amount).toLocaleString()}</td>
-                          <td className="px-6 py-4">{c.signed_date ? c.signed_date.substring(0, 10) : 'N/A'}</td>
-                          <td className="px-6 py-4">
+                        <TableRow key={c.id}>
+                          <TableCell className="font-medium text-emerald-400">{c.contract_number}</TableCell>
+                          <TableCell>{c.customer_id ? c.customer_id.substring(0,8) + '...' : 'N/A'}</TableCell>
+                          <TableCell className="font-bold">${Number(c.amount).toLocaleString()}</TableCell>
+                          <TableCell>{c.signed_date ? c.signed_date.substring(0, 10) : 'N/A'}</TableCell>
+                          <TableCell>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               c.status === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
                               c.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -215,71 +225,83 @@ export default function SalesPage() {
                             }`}>
                               {c.status.toUpperCase()}
                             </span>
-                          </td>
-                          <td className="px-6 py-4 text-right space-x-2">
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-blue-400" onClick={() => handleOpenModal(c)}>Edit</Button>
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-red-400" onClick={() => handleDelete(c.id)}>Delete</Button>
-                          </td>
-                        </tr>
+                          </TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button variant="ghost" size="sm" className="text-blue-400" onClick={() => handleOpenModal(c)}>Edit</Button>
+                            <Button variant="ghost" size="sm" className="text-red-400" onClick={() => handleDelete(c.id)}>Delete</Button>
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
         </main>
       </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
-        title={editingContract ? 'Edit Contract' : 'Create New Contract'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input 
-            label="Contract Number" 
-            required 
-            value={formData.contract_number} 
-            onChange={(e) => setFormData({...formData, contract_number: e.target.value})} 
-          />
-          <Input 
-            label="Customer ID (Optional for now)" 
-            value={formData.customer_id} 
-            onChange={(e) => setFormData({...formData, customer_id: e.target.value})} 
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              label="Amount ($)" 
-              type="number" 
-              required 
-              value={formData.amount}
-              onChange={(e) => setFormData({...formData, amount: e.target.value})}
-            />
-            <Input 
-              label="Signed Date" 
-              type="date" 
-              value={formData.signed_date}
-              onChange={(e) => setFormData({...formData, signed_date: e.target.value})}
-            />
-          </div>
-          <Select 
-            label="Status" 
-            value={formData.status}
-            onChange={(e) => setFormData({...formData, status: e.target.value})}
-            options={[
-              { value: 'draft', label: 'Draft' },
-              { value: 'pending', label: 'Pending' },
-              { value: 'signed', label: 'Signed' },
-              { value: 'cancelled', label: 'Cancelled' },
-            ]}
-          />
-          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-white/10">
-            <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
-            <Button type="submit">{editingContract ? 'Save Changes' : 'Create Contract'}</Button>
-          </div>
-        </form>
-      </Modal>
+      <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingContract ? 'Edit Contract' : 'Create New Contract'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Contract Number</Label>
+              <Input 
+                required 
+                value={formData.contract_number} 
+                onChange={(e) => setFormData({...formData, contract_number: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Customer ID (Optional for now)</Label>
+              <Input 
+                value={formData.customer_id} 
+                onChange={(e) => setFormData({...formData, customer_id: e.target.value})} 
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Amount ($)</Label>
+                <Input 
+                  type="number" 
+                  required 
+                  value={formData.amount}
+                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Signed Date</Label>
+                <Input 
+                  type="date" 
+                  value={formData.signed_date}
+                  onChange={(e) => setFormData({...formData, signed_date: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={formData.status} onValueChange={(val) => setFormData({...formData, status: val as string})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="signed">Signed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter className="mt-6 pt-4 border-t border-white/10">
+              <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
+              <Button type="submit">{editingContract ? 'Save Changes' : 'Create Contract'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

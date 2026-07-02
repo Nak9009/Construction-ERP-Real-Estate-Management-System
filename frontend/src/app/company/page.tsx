@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Building2, Save } from 'lucide-react';
 
 export default function CompanyPage() {
@@ -44,45 +45,55 @@ export default function CompanyPage() {
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input 
-                      label="Company Name" 
-                      value={formData.name} 
-                      onChange={(e) => setFormData({...formData, name: e.target.value})} 
-                      required 
-                    />
-                    <Input 
-                      label="Tax ID / Registration Number" 
-                      value={formData.taxId} 
-                      onChange={(e) => setFormData({...formData, taxId: e.target.value})} 
-                      required 
-                    />
-                    <Input 
-                      label="Contact Email" 
-                      type="email" 
-                      value={formData.email} 
-                      onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                      required 
-                    />
-                    <Input 
-                      label="Contact Phone" 
-                      value={formData.phone} 
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-                      required 
-                    />
-                    <div className="md:col-span-2">
+                    <div className="space-y-2">
+                      <Label>Company Name</Label>
                       <Input 
-                        label="Registered Address" 
+                        value={formData.name} 
+                        onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                        required 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tax ID / Registration Number</Label>
+                      <Input 
+                        value={formData.taxId} 
+                        onChange={(e) => setFormData({...formData, taxId: e.target.value})} 
+                        required 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Contact Email</Label>
+                      <Input 
+                        type="email" 
+                        value={formData.email} 
+                        onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                        required 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Contact Phone</Label>
+                      <Input 
+                        value={formData.phone} 
+                        onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                        required 
+                      />
+                    </div>
+                    <div className="md:col-span-2 space-y-2">
+                      <Label>Registered Address</Label>
+                      <Input 
                         value={formData.address} 
                         onChange={(e) => setFormData({...formData, address: e.target.value})} 
                         required 
                       />
                     </div>
-                    <Input 
-                      label="Base Currency" 
-                      value={formData.currency} 
-                      onChange={(e) => setFormData({...formData, currency: e.target.value})} 
-                      disabled
-                    />
+                    <div className="space-y-2">
+                      <Label>Base Currency</Label>
+                      <Input 
+                        value={formData.currency} 
+                        onChange={(e) => setFormData({...formData, currency: e.target.value})} 
+                        disabled
+                      />
+                    </div>
                   </div>
                   
                   <div className="flex justify-end pt-4 mt-6 border-t border-slate-800/50">

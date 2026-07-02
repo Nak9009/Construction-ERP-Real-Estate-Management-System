@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { FolderHeart, FileLock2, UploadCloud } from 'lucide-react';
 
@@ -19,22 +19,6 @@ const MOCK_DATA = [
 export default function DocumentsPage() {
   const [data] = useState(MOCK_DATA);
 
-  const columns = [
-    { header: 'File Name', accessor: 'name' as const, className: 'font-medium text-cyan-400' },
-    { header: 'Category', accessor: 'type' as const },
-    { header: 'Project / Scope', accessor: 'project' as const },
-    { header: 'Uploaded By', accessor: 'uploadedBy' as const },
-    { header: 'Date', accessor: 'date' as const },
-    { header: 'Size', accessor: 'size' as const, className: 'text-slate-400' },
-    { 
-      header: 'Actions', 
-      accessor: (item: any) => (
-        <div className="flex gap-2">
-          <Button variant="ghost" className="h-8 text-cyan-400 hover:text-cyan-300">Download</Button>
-        </div>
-      ) 
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
@@ -79,9 +63,42 @@ export default function DocumentsPage() {
                 <Button variant="ghost" className="text-xs h-8">Legal</Button>
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table columns={columns} data={data} keyExtractor={(item) => item.id} />
-            </CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>File Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Project / Scope</TableHead>
+                      <TableHead>Uploaded By</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Size</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">No documents found.</TableCell>
+                      </TableRow>
+                    ) : (
+                      data.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium text-cyan-400">{item.name}</TableCell>
+                          <TableCell>{item.type}</TableCell>
+                          <TableCell>{item.project}</TableCell>
+                          <TableCell>{item.uploadedBy}</TableCell>
+                          <TableCell>{item.date}</TableCell>
+                          <TableCell className="text-slate-400">{item.size}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="h-8 text-cyan-400 hover:text-cyan-300">Download</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
           </Card>
         </main>
       </div>

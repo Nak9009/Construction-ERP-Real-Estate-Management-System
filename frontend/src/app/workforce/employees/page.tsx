@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { UserCircle, ShieldCheck, Activity } from 'lucide-react';
 
@@ -21,28 +21,6 @@ export default function EmployeesPage() {
   const [data, setData] = useState(MOCK_DATA);
   const [loading, setLoading] = useState(false);
 
-  const columns = [
-    { header: 'Name', accessor: 'name' as keyof typeof MOCK_DATA[0], className: 'font-medium text-white' },
-    { header: 'Role', accessor: 'role' as keyof typeof MOCK_DATA[0] },
-    { header: 'Department', accessor: 'department' as keyof typeof MOCK_DATA[0] },
-    { header: 'Contact', accessor: 'contact' as keyof typeof MOCK_DATA[0] },
-    { 
-      header: 'Status', 
-      accessor: (item: any) => (
-        <Badge variant={item.status === 'active' ? 'success' : 'warning'}>
-          {item.status.replace('_', ' ')}
-        </Badge>
-      ) 
-    },
-    { 
-      header: 'Actions', 
-      accessor: (item: any) => (
-        <div className="flex gap-2">
-          <Button variant="ghost" className="h-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/50">Edit</Button>
-        </div>
-      ) 
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
@@ -81,12 +59,48 @@ export default function EmployeesPage() {
               <CardTitle>Staff List</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <Table 
-                columns={columns} 
-                data={data} 
-                keyExtractor={(item) => item.id}
-                loading={loading}
-              />
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading employees...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">No employees found.</TableCell>
+                      </TableRow>
+                    ) : (
+                      data.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium text-white">{item.name}</TableCell>
+                          <TableCell>{item.role}</TableCell>
+                          <TableCell>{item.department}</TableCell>
+                          <TableCell>{item.contact}</TableCell>
+                          <TableCell>
+                            <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
+                              {item.status.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="h-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/50">Edit</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </main>

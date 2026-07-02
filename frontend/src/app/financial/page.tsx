@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -19,28 +19,6 @@ const MOCK_DATA = [
 export default function FinancialPage() {
   const [data] = useState(MOCK_DATA);
 
-  const columns = [
-    { header: 'Transaction ID', accessor: 'txNumber' as const, className: 'font-mono text-xs text-slate-400' },
-    { header: 'Date', accessor: 'date' as const },
-    { 
-      header: 'Type', 
-      accessor: (item: any) => (
-        <span className={item.type === 'Income' ? 'text-emerald-400' : 'text-red-400'}>
-          {item.type}
-        </span>
-      ) 
-    },
-    { header: 'Category', accessor: 'category' as const, className: 'font-medium' },
-    { header: 'Amount', accessor: 'amount' as const, className: 'font-bold font-mono' },
-    { 
-      header: 'Status', 
-      accessor: (item: any) => (
-        <Badge variant={item.status === 'completed' ? 'success' : 'warning'}>
-          {item.status}
-        </Badge>
-      ) 
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
@@ -83,9 +61,46 @@ export default function FinancialPage() {
             <CardHeader className="border-b border-slate-800/50 pb-4">
               <CardTitle>Recent Transactions</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table columns={columns} data={data} keyExtractor={(item) => item.id} />
-            </CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Transaction ID</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">No transactions found.</TableCell>
+                      </TableRow>
+                    ) : (
+                      data.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-mono text-xs text-slate-400">{item.txNumber}</TableCell>
+                          <TableCell>{item.date}</TableCell>
+                          <TableCell>
+                            <span className={item.type === 'Income' ? 'text-emerald-400' : 'text-red-400'}>
+                              {item.type}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-medium">{item.category}</TableCell>
+                          <TableCell className="font-bold font-mono">{item.amount}</TableCell>
+                          <TableCell>
+                            <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
           </Card>
         </main>
       </div>

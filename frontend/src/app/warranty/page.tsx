@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { ShieldCheck, AlertCircle, Wrench } from 'lucide-react';
 
@@ -19,33 +19,6 @@ const MOCK_DATA = [
 export default function WarrantyPage() {
   const [data] = useState(MOCK_DATA);
 
-  const columns = [
-    { header: 'Claim Ref', accessor: 'claimRef' as const, className: 'font-mono text-xs text-slate-400' },
-    { header: 'Customer', accessor: 'customer' as const, className: 'font-medium text-white' },
-    { header: 'Property', accessor: 'property' as const },
-    { header: 'Issue Description', accessor: 'issue' as const },
-    { header: 'Filed On', accessor: 'date' as const },
-    { 
-      header: 'Status', 
-      accessor: (item: any) => (
-        <Badge variant={
-          item.status === 'resolved' ? 'success' : 
-          item.status === 'in_progress' ? 'info' : 
-          'warning'
-        }>
-          {item.status.replace('_', ' ')}
-        </Badge>
-      ) 
-    },
-    { 
-      header: 'Actions', 
-      accessor: (item: any) => (
-        <div className="flex gap-2">
-          <Button variant="ghost" className="h-8 text-cyan-400 hover:text-cyan-300">Update</Button>
-        </div>
-      ) 
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
@@ -82,9 +55,50 @@ export default function WarrantyPage() {
             <CardHeader className="border-b border-slate-800/50 pb-4">
               <CardTitle>Recent Service Requests</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table columns={columns} data={data} keyExtractor={(item) => item.id} />
-            </CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Claim Ref</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Property</TableHead>
+                      <TableHead>Issue Description</TableHead>
+                      <TableHead>Filed On</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">No service requests found.</TableCell>
+                      </TableRow>
+                    ) : (
+                      data.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-mono text-xs text-slate-400">{item.claimRef}</TableCell>
+                          <TableCell className="font-medium text-white">{item.customer}</TableCell>
+                          <TableCell>{item.property}</TableCell>
+                          <TableCell>{item.issue}</TableCell>
+                          <TableCell>{item.date}</TableCell>
+                          <TableCell>
+                            <Badge variant={
+                              item.status === 'resolved' ? 'default' : 
+                              item.status === 'in_progress' ? 'secondary' : 
+                              'destructive'
+                            }>
+                              {item.status.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="h-8 text-cyan-400 hover:text-cyan-300">Update</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
           </Card>
         </main>
       </div>

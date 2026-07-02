@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { ShoppingCart, Clock, CheckCircle } from 'lucide-react';
 
@@ -19,32 +19,6 @@ const MOCK_DATA = [
 export default function ProcurementPage() {
   const [data] = useState(MOCK_DATA);
 
-  const columns = [
-    { header: 'PO Number', accessor: 'poNumber' as const, className: 'font-medium text-emerald-400' },
-    { header: 'Supplier', accessor: 'supplier' as const },
-    { header: 'Order Date', accessor: 'date' as const },
-    { header: 'Total Value', accessor: 'total' as const, className: 'font-bold' },
-    { 
-      header: 'Status', 
-      accessor: (item: any) => (
-        <Badge variant={
-          item.status === 'fulfilled' ? 'success' : 
-          item.status === 'approved' ? 'info' : 
-          'warning'
-        }>
-          {item.status}
-        </Badge>
-      ) 
-    },
-    { 
-      header: 'Actions', 
-      accessor: (item: any) => (
-        <div className="flex gap-2">
-          <Button variant="ghost" className="h-8 text-cyan-400 hover:text-cyan-300">View</Button>
-        </div>
-      ) 
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
@@ -81,9 +55,48 @@ export default function ProcurementPage() {
             <CardHeader className="border-b border-slate-800/50 pb-4">
               <CardTitle>Purchase Orders</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table columns={columns} data={data} keyExtractor={(item) => item.id} />
-            </CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>PO Number</TableHead>
+                      <TableHead>Supplier</TableHead>
+                      <TableHead>Order Date</TableHead>
+                      <TableHead>Total Value</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">No purchase orders found.</TableCell>
+                      </TableRow>
+                    ) : (
+                      data.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium text-emerald-400">{item.poNumber}</TableCell>
+                          <TableCell>{item.supplier}</TableCell>
+                          <TableCell>{item.date}</TableCell>
+                          <TableCell className="font-bold">{item.total}</TableCell>
+                          <TableCell>
+                            <Badge variant={
+                              item.status === 'fulfilled' ? 'default' : 
+                              item.status === 'approved' ? 'secondary' : 
+                              'destructive'
+                            }>
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="h-8 text-cyan-400 hover:text-cyan-300">View</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
           </Card>
         </main>
       </div>

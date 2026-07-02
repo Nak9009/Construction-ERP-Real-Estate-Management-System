@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { api } from '@/lib/api';
 
 interface Land {
@@ -90,6 +92,14 @@ export default function LandInventoryPage() {
     setEditingLand(null);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleCloseModal();
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -164,34 +174,34 @@ export default function LandInventoryPage() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-white/5 uppercase text-neutral-400">
-                    <tr>
-                      <th className="px-6 py-3 font-medium">Title Number</th>
-                      <th className="px-6 py-3 font-medium">Owner Name</th>
-                      <th className="px-6 py-3 font-medium">Area (sqm)</th>
-                      <th className="px-6 py-3 font-medium">Value</th>
-                      <th className="px-6 py-3 font-medium">Project</th>
-                      <th className="px-6 py-3 font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title Number</TableHead>
+                      <TableHead>Owner Name</TableHead>
+                      <TableHead>Area (sqm)</TableHead>
+                      <TableHead>Value</TableHead>
+                      <TableHead>Project</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {loading ? (
-                       <tr>
-                         <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">Loading land registry...</td>
-                       </tr>
+                       <TableRow>
+                         <TableCell colSpan={6} className="h-24 text-center">Loading land registry...</TableCell>
+                       </TableRow>
                     ) : lands.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">No land assets found.</td>
-                      </tr>
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">No land assets found.</TableCell>
+                      </TableRow>
                     ) : (
                       lands.map((land) => (
-                        <tr key={land.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 font-medium text-emerald-400">{land.title_number || 'Unregistered'}</td>
-                          <td className="px-6 py-4">{land.owner_name || 'N/A'}</td>
-                          <td className="px-6 py-4">{land.area_sqm?.toLocaleString() || 'N/A'}</td>
-                          <td className="px-6 py-4 font-bold">${land.purchase_price?.toLocaleString() || '0'}</td>
-                          <td className="px-6 py-4">
+                        <TableRow key={land.id}>
+                          <TableCell className="font-medium text-emerald-400">{land.title_number || 'Unregistered'}</TableCell>
+                          <TableCell>{land.owner_name || 'N/A'}</TableCell>
+                          <TableCell>{land.area_sqm?.toLocaleString() || 'N/A'}</TableCell>
+                          <TableCell className="font-bold">${land.purchase_price?.toLocaleString() || '0'}</TableCell>
+                          <TableCell>
                             {land.project ? (
                               <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
                                 {land.project.name}
@@ -201,58 +211,67 @@ export default function LandInventoryPage() {
                                 Unassigned
                               </span>
                             )}
-                          </td>
-                          <td className="px-6 py-4 text-right space-x-2">
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-blue-400" onClick={() => handleOpenModal(land)}>Edit</Button>
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-red-400" onClick={() => handleDelete(land.id)}>Delete</Button>
-                          </td>
-                        </tr>
+                          </TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button variant="ghost" size="sm" className="text-blue-400" onClick={() => handleOpenModal(land)}>Edit</Button>
+                            <Button variant="ghost" size="sm" className="text-red-400" onClick={() => handleDelete(land.id)}>Delete</Button>
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
         </main>
       </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
-        title={editingLand ? 'Edit Land Asset' : 'Acquire New Land'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input 
-            label="Title Number / Deed" 
-            value={formData.title_number} 
-            onChange={(e) => setFormData({...formData, title_number: e.target.value})} 
-          />
-          <Input 
-            label="Owner Name (on deed)" 
-            value={formData.owner_name} 
-            onChange={(e) => setFormData({...formData, owner_name: e.target.value})} 
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              label="Area (sqm)" 
-              type="number"
-              value={formData.area_sqm} 
-              onChange={(e) => setFormData({...formData, area_sqm: e.target.value})} 
-            />
-            <Input 
-              label="Purchase Price ($)" 
-              type="number"
-              value={formData.purchase_price} 
-              onChange={(e) => setFormData({...formData, purchase_price: e.target.value})} 
-            />
-          </div>
-          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-white/10">
-            <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
-            <Button type="submit">{editingLand ? 'Save Changes' : 'Add Land'}</Button>
-          </div>
-        </form>
-      </Modal>
+      <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingLand ? 'Edit Land Asset' : 'Acquire New Land'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Title Number / Deed</Label>
+              <Input 
+                value={formData.title_number} 
+                onChange={(e) => setFormData({...formData, title_number: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Owner Name (on deed)</Label>
+              <Input 
+                value={formData.owner_name} 
+                onChange={(e) => setFormData({...formData, owner_name: e.target.value})} 
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Area (sqm)</Label>
+                <Input 
+                  type="number"
+                  value={formData.area_sqm} 
+                  onChange={(e) => setFormData({...formData, area_sqm: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Purchase Price ($)</Label>
+                <Input 
+                  type="number"
+                  value={formData.purchase_price} 
+                  onChange={(e) => setFormData({...formData, purchase_price: e.target.value})} 
+                />
+              </div>
+            </div>
+            <DialogFooter className="mt-6 pt-4 border-t border-white/10">
+              <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
+              <Button type="submit">{editingLand ? 'Save Changes' : 'Add Land'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

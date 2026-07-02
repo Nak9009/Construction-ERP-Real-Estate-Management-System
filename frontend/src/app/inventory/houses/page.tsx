@@ -3,11 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
-import { Select } from '@/components/ui/Select';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { api } from '@/lib/api';
 
 interface House {
@@ -92,6 +94,14 @@ export default function HouseInventoryPage() {
     setEditingHouse(null);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleCloseModal();
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -172,31 +182,31 @@ export default function HouseInventoryPage() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-white/5 uppercase text-neutral-400">
-                    <tr>
-                      <th className="px-6 py-3 font-medium">House Number</th>
-                      <th className="px-6 py-3 font-medium">Model/Type</th>
-                      <th className="px-6 py-3 font-medium">Status</th>
-                      <th className="px-6 py-3 font-medium">Est. Cost</th>
-                      <th className="px-6 py-3 font-medium">Sales Price</th>
-                      <th className="px-6 py-3 font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>House Number</TableHead>
+                      <TableHead>Model/Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Est. Cost</TableHead>
+                      <TableHead>Sales Price</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {loading ? (
-                       <tr>
-                         <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">Loading house inventory...</td>
-                       </tr>
+                       <TableRow>
+                         <TableCell colSpan={6} className="h-24 text-center">Loading house inventory...</TableCell>
+                       </TableRow>
                     ) : houses.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">No houses found.</td>
-                      </tr>
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">No houses found.</TableCell>
+                      </TableRow>
                     ) : (
                       houses.map((house) => (
-                        <tr key={house.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 font-medium text-emerald-400">{house.house_number}</td>
-                          <td className="px-6 py-4">
+                        <TableRow key={house.id}>
+                          <TableCell className="font-medium text-emerald-400">{house.house_number}</TableCell>
+                          <TableCell>
                             {house.house_type ? (
                               <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">
                                 {house.house_type.name}
@@ -206,8 +216,8 @@ export default function HouseInventoryPage() {
                                 Custom Build
                               </span>
                             )}
-                          </td>
-                          <td className="px-6 py-4">
+                          </TableCell>
+                          <TableCell>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               house.status === 'completed' || house.status === 'available' ? 'bg-emerald-500/20 text-emerald-400' :
                               house.status === 'planned' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -215,68 +225,78 @@ export default function HouseInventoryPage() {
                             }`}>
                               {house.status.toUpperCase()}
                             </span>
-                          </td>
-                          <td className="px-6 py-4">${house.construction_cost?.toLocaleString() || '0'}</td>
-                          <td className="px-6 py-4 font-bold">${house.selling_price?.toLocaleString() || '0'}</td>
-                          <td className="px-6 py-4 text-right space-x-2">
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-blue-400" onClick={() => handleOpenModal(house)}>Edit</Button>
-                            <Button variant="ghost" className="text-xs py-1 px-3 text-red-400" onClick={() => handleDelete(house.id)}>Delete</Button>
-                          </td>
-                        </tr>
+                          </TableCell>
+                          <TableCell>${house.construction_cost?.toLocaleString() || '0'}</TableCell>
+                          <TableCell className="font-bold">${house.selling_price?.toLocaleString() || '0'}</TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button variant="ghost" size="sm" className="text-blue-400" onClick={() => handleOpenModal(house)}>Edit</Button>
+                            <Button variant="ghost" size="sm" className="text-red-400" onClick={() => handleDelete(house.id)}>Delete</Button>
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
         </main>
       </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
-        title={editingHouse ? 'Edit House Asset' : 'Add New House Unit'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input 
-            label="House Number / Plot Identifier" 
-            required
-            value={formData.house_number} 
-            onChange={(e) => setFormData({...formData, house_number: e.target.value})} 
-          />
-          <Select 
-            label="Construction Status" 
-            value={formData.status}
-            onChange={(e) => setFormData({...formData, status: e.target.value})}
-            options={[
-              { value: 'planned', label: 'Planned' },
-              { value: 'under_construction', label: 'Under Construction' },
-              { value: 'completed', label: 'Completed' },
-              { value: 'available', label: 'Available for Sale' },
-              { value: 'sold', label: 'Sold' },
-            ]}
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              label="Estimated Cost ($)" 
-              type="number"
-              value={formData.construction_cost} 
-              onChange={(e) => setFormData({...formData, construction_cost: e.target.value})} 
-            />
-            <Input 
-              label="Target Selling Price ($)" 
-              type="number"
-              value={formData.selling_price} 
-              onChange={(e) => setFormData({...formData, selling_price: e.target.value})} 
-            />
-          </div>
-          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-white/10">
-            <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
-            <Button type="submit">{editingHouse ? 'Save Changes' : 'Add House'}</Button>
-          </div>
-        </form>
-      </Modal>
+      <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingHouse ? 'Edit House Asset' : 'Add New House Unit'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>House Number / Plot Identifier</Label>
+              <Input 
+                required
+                value={formData.house_number} 
+                onChange={(e) => setFormData({...formData, house_number: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Construction Status</Label>
+              <Select value={formData.status} onValueChange={(val) => setFormData({...formData, status: val as string})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="under_construction">Under Construction</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="available">Available for Sale</SelectItem>
+                  <SelectItem value="sold">Sold</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Estimated Cost ($)</Label>
+                <Input 
+                  type="number"
+                  value={formData.construction_cost} 
+                  onChange={(e) => setFormData({...formData, construction_cost: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Target Selling Price ($)</Label>
+                <Input 
+                  type="number"
+                  value={formData.selling_price} 
+                  onChange={(e) => setFormData({...formData, selling_price: e.target.value})} 
+                />
+              </div>
+            </div>
+            <DialogFooter className="mt-6 pt-4 border-t border-white/10">
+              <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
+              <Button type="submit">{editingHouse ? 'Save Changes' : 'Add House'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -674,7 +674,7 @@ Design
 
 Backend
 
-Laravel 12
+Laravel 13
 
 PHP 8.4
 
@@ -693,6 +693,8 @@ React
 Next.js
 
 TailwindCSS
+
+shadcn/ui
 
 Flutter
 
