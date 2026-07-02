@@ -244,10 +244,50 @@ npm run dev</code></pre>
             </h2>
             <div class="glass-panel p-6 rounded-xl mb-6">
                 <p class="mb-4 text-slate-300">Use the following credentials to access the system (these are created when you run database seeders):</p>
-                <div class="bg-black/50 p-4 rounded-lg space-y-2 border border-slate-800 font-mono text-sm">
-                    <p><span class="text-slate-500">Email:</span> <span class="text-cyan-400">admin@example.com</span></p>
-                    <p><span class="text-slate-500">Password:</span> <span class="text-cyan-400">password</span></p>
-                </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-700">
+                                    <th class="py-2 px-3">Role</th>
+                                    <th class="py-2 px-3">Name</th>
+                                    <th class="py-2 px-3">Email</th>
+                                    <th class="py-2 px-3">Password</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800">
+                                <tr>
+                                    <td class="py-2 px-3"><span class="px-2 py-1 bg-fuchsia-500/20 text-fuchsia-400 rounded text-xs font-medium border border-fuchsia-500/20">Super Admin</span></td>
+                                    <td class="py-2 px-3 text-slate-300">Super Admin User</td>
+                                    <td class="py-2 px-3 text-cyan-400">admin@pphousing.com</td>
+                                    <td class="py-2 px-3 text-cyan-400">Password123!</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium border border-blue-500/20">Project Manager</span></td>
+                                    <td class="py-2 px-3 text-slate-300">Sokha Chan</td>
+                                    <td class="py-2 px-3 text-cyan-400">sokha.chan@pphousing.com</td>
+                                    <td class="py-2 px-3 text-cyan-400">Password123!</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><span class="px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs font-medium border border-amber-500/20">Site Engineer</span></td>
+                                    <td class="py-2 px-3 text-slate-300">Dara Vong</td>
+                                    <td class="py-2 px-3 text-cyan-400">dara.vong@pphousing.com</td>
+                                    <td class="py-2 px-3 text-cyan-400">Password123!</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Sales Agent</span></td>
+                                    <td class="py-2 px-3 text-slate-300">Borey Kem</td>
+                                    <td class="py-2 px-3 text-cyan-400">borey.kem@pphousing.com</td>
+                                    <td class="py-2 px-3 text-cyan-400">Password123!</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><span class="px-2 py-1 bg-slate-500/20 text-slate-400 rounded text-xs font-medium border border-slate-500/20">Customer</span></td>
+                                    <td class="py-2 px-3 text-slate-300">Chanthy Meas</td>
+                                    <td class="py-2 px-3 text-cyan-400">chanthy.meas@gmail.com</td>
+                                    <td class="py-2 px-3 text-cyan-400">Password123!</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
             </div>
         </section>
 
