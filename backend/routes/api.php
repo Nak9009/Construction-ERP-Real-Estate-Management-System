@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\WarrantyController;
 use App\Http\Controllers\Api\V1\DocumentController;
 use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\Admin\UserController;
+use App\Http\Controllers\Api\V1\Admin\RoleController;
+use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -131,6 +134,15 @@ Route::prefix('v1')->group(function () {
         Route::post('reports/project-summary', [ReportController::class, 'projectSummary']);
         Route::post('reports/financial', [ReportController::class, 'financial']);
         Route::post('reports/workforce', [ReportController::class, 'workforce']);
+
+        // Admin Management
+        Route::prefix('admin')->group(function () {
+            Route::get('dashboard', [AdminDashboardController::class, 'overview']);
+            
+            Route::apiResource('users', UserController::class);
+            Route::apiResource('roles', RoleController::class);
+            Route::get('permissions', [RoleController::class, 'permissions']);
+        });
     });
 });
 
