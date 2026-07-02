@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Domain\Project\Models\Project;
-use App\Domain\Project\Models\Milestone;
-use App\Domain\Project\Models\ProjectRisk;
-use App\Domain\Project\Enums\ProjectStatus;
-use Illuminate\Validation\Rules\Enum;
+use App\Http\Requests\Api\V1\ProjectStoreRequest;
+use App\Http\Requests\Api\V1\ProjectUpdateRequest;
+use App\Http\Resources\Api\V1\ProjectResource;
 
 class ProjectController extends Controller
 {
@@ -23,33 +22,19 @@ class ProjectController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json(['projects' => $projects]);
+        return ProjectResource::collection($projects);
     }
 
     /**
      * Store a newly created project.
      */
-    public function store(Request $request)
+    public function store(ProjectStoreRequest $request)
     {
-        $this->authorize('create_projects');
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500',
-            'lat' => 'nullable|numeric|between:-90,90',
-            'lng' => 'nullable|numeric|between:-180,180',
-            'budget' => 'nullable|numeric|min:0',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'status' => ['nullable', new Enum(ProjectStatus::class)],
-            'description' => 'nullable|string',
-        ]);
-
-        $project = Project::create($validated);
+        $project = Project::create($request->validated());
 
         return response()->json([
             'message' => 'Project created successfully',
-            'project' => $project
+            'project' => new ProjectResource($project)
         ], 201);
     }
 
@@ -60,35 +45,19 @@ class ProjectController extends Controller
     {
         $this->authorize('view_projects');
 
-        return response()->json([
-            'project' => $project->load(['milestones', 'risks', 'land.blocks.lots'])
-        ]);
+        return new ProjectResource($project->load(['milestones', 'risks', 'land.blocks.lots']));
     }
 
     /**
      * Update the specified project.
      */
-    public function update(Request $request, Project $project)
+    public function update(ProjectUpdateRequest $request, Project $project)
     {
-        $this->authorize('update_projects');
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500',
-            'lat' => 'nullable|numeric|between:-90,90',
-            'lng' => 'nullable|numeric|between:-180,180',
-            'budget' => 'nullable|numeric|min:0',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'status' => ['required', new Enum(ProjectStatus::class)],
-            'description' => 'nullable|string',
-        ]);
-
-        $project->update($validated);
+        $project->update($request->validated());
 
         return response()->json([
             'message' => 'Project updated successfully',
-            'project' => $project
+            'project' => new ProjectResource($project)
         ]);
     }
 
@@ -148,3 +117,4 @@ class ProjectController extends Controller
         ], 201);
     }
 }
+

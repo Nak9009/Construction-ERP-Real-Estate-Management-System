@@ -65,7 +65,7 @@ class AuthAndProjectsTest extends TestCase
         $response = $this->actingAs($user, 'sanctum')->getJson('/api/v1/projects');
 
         $response->assertStatus(200)
-                 ->assertJsonCount(1, 'projects')
-                 ->assertJsonPath('projects.0.name', 'Green City Phase 1');
+                 ->assertJsonCount(1, 'data')
+                 ->assertJsonPath('data.0.name', 'Green City Phase 1');
     }
 }
