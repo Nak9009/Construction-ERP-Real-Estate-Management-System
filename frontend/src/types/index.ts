@@ -16,10 +16,3 @@ export interface Company {
   created_at: string;
   updated_at: string;
 }
-
-export interface DashboardMetrics {
-  total_users: number;
-  active_projects: number;
-  monthly_sales: number;
-  open_maintenance_requests: number;
-}

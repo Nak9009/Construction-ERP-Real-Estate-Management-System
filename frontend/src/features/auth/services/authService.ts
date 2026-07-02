@@ -1,5 +1,5 @@
-import api from '../lib/api';
-import { User } from '../types';
+import api from '@/lib/api';
+import { User } from '@/types';
 
 interface LoginResponse {
   message: string;

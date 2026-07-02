@@ -32,7 +32,7 @@ import {
   Building2
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
-import { authService } from '@/services/authService';
+import { authService } from '@/features/auth/services/authService';
 
 type NavItem = {
   name: string;
