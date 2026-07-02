@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,38 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Tractor, Wrench, AlertTriangle, Activity } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', name: 'Excavator CAT-320', category: 'Heavy Machinery', location: 'Site A - Downtown', status: 'in_use', lastMaintenance: '2026-05-12' },
-  { id: '2', name: 'Bulldozer D6', category: 'Heavy Machinery', location: 'Yard', status: 'available', lastMaintenance: '2026-06-01' },
-  { id: '3', name: 'Concrete Mixer #4', category: 'Light Equipment', location: 'Site B - Suburbs', status: 'maintenance', lastMaintenance: '2026-07-01' },
-];
+interface Equipment {
+  id: string | number;
+  name: string;
+  category: string;
+  location: string;
+  status: string;
+  lastMaintenance?: string;
+  last_maintenance?: string;
+}
 
 export default function EquipmentPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<Equipment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalEquipment, setTotalEquipment] = useState(0);
 
+  useEffect(() => {
+    fetchEquipment();
+  }, []);
 
+  const fetchEquipment = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/equipment');
+      const equipment = res.data.data || res.data;
+      setData(equipment);
+      setTotalEquipment(equipment.length);
+    } catch (error) {
+      console.error('Failed to fetch equipment:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -36,7 +59,7 @@ export default function EquipmentPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard 
               title="Total Fleet" 
-              value={156} 
+              value={totalEquipment} 
               icon={<Tractor className="w-5 h-5 text-indigo-400" />} 
             />
             <StatsCard 
@@ -68,7 +91,11 @@ export default function EquipmentPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading equipment...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">No equipment found.</TableCell>
                       </TableRow>
@@ -78,7 +105,7 @@ export default function EquipmentPage() {
                           <TableCell className="font-medium text-white">{item.name}</TableCell>
                           <TableCell>{item.category}</TableCell>
                           <TableCell>{item.location}</TableCell>
-                          <TableCell>{item.lastMaintenance}</TableCell>
+                          <TableCell>{item.lastMaintenance || item.last_maintenance || 'N/A'}</TableCell>
                           <TableCell>
                             <Badge variant={
                               item.status === 'in_use' ? 'default' : 

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,39 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { FolderHeart, FileLock2, UploadCloud } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', name: 'Site_Plan_Final_v3.pdf', type: 'Blueprint', project: 'Downtown Highrise', uploadedBy: 'Jane Smith', date: '2026-07-02', size: '4.2 MB' },
-  { id: '2', name: 'Contract_BuildRite.docx', type: 'Legal', project: 'N/A', uploadedBy: 'System', date: '2026-07-01', size: '1.1 MB' },
-  { id: '3', name: 'Inspection_Report_Jul.pdf', type: 'Report', project: 'Suburban Villas', uploadedBy: 'Mike Johnson', date: '2026-06-30', size: '2.5 MB' },
-];
+interface Document {
+  id: string | number;
+  name: string;
+  type: string;
+  project: string;
+  uploadedBy?: string;
+  uploaded_by?: string;
+  date: string;
+  size: string;
+}
 
 export default function DocumentsPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalDocs, setTotalDocs] = useState(0);
 
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
 
+  const fetchDocuments = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/documents');
+      const docs = res.data.data || res.data;
+      setData(docs);
+      setTotalDocs(docs.length);
+    } catch (error) {
+      console.error('Failed to fetch documents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -39,7 +63,7 @@ export default function DocumentsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard 
               title="Total Documents" 
-              value="1,842" 
+              value={totalDocs} 
               icon={<FolderHeart className="w-5 h-5 text-indigo-400" />} 
             />
             <StatsCard 
@@ -77,7 +101,11 @@ export default function DocumentsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">Loading documents...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="h-24 text-center">No documents found.</TableCell>
                       </TableRow>
@@ -87,7 +115,7 @@ export default function DocumentsPage() {
                           <TableCell className="font-medium text-cyan-400">{item.name}</TableCell>
                           <TableCell>{item.type}</TableCell>
                           <TableCell>{item.project}</TableCell>
-                          <TableCell>{item.uploadedBy}</TableCell>
+                          <TableCell>{item.uploadedBy || item.uploaded_by || 'Unknown'}</TableCell>
                           <TableCell>{item.date}</TableCell>
                           <TableCell className="text-slate-400">{item.size}</TableCell>
                           <TableCell>

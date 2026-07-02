@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,18 +11,38 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { UserCircle, ShieldCheck, Activity } from 'lucide-react';
 
-// Placeholder data since we might not have the API ready yet
-const MOCK_DATA = [
-  { id: '1', name: 'John Doe', role: 'Site Manager', department: 'Construction', status: 'active', contact: '+1 234 567 8900' },
-  { id: '2', name: 'Jane Smith', role: 'Architect', department: 'Design', status: 'active', contact: '+1 234 567 8901' },
-  { id: '3', name: 'Mike Johnson', role: 'Foreman', department: 'Construction', status: 'on_leave', contact: '+1 234 567 8902' },
-];
+interface Employee {
+  id: string | number;
+  name: string;
+  role: string;
+  department: string;
+  status: string;
+  contact?: string;
+  phone?: string;
+}
 
 export default function EmployeesPage() {
-  const [data, setData] = useState(MOCK_DATA);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalEmployees, setTotalEmployees] = useState(0);
 
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/workforce/employees');
+      const employees = res.data.data || res.data;
+      setData(employees);
+      setTotalEmployees(employees.length);
+    } catch (error) {
+      console.error('Failed to fetch employees:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -38,7 +59,7 @@ export default function EmployeesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard 
               title="Total Employees" 
-              value={142} 
+              value={totalEmployees} 
               icon={<UserCircle className="w-5 h-5 text-cyan-400" />} 
               trend={{ value: 4, isPositive: true }} 
             />
@@ -86,7 +107,7 @@ export default function EmployeesPage() {
                           <TableCell className="font-medium text-white">{item.name}</TableCell>
                           <TableCell>{item.role}</TableCell>
                           <TableCell>{item.department}</TableCell>
-                          <TableCell>{item.contact}</TableCell>
+                          <TableCell>{item.contact || item.phone || 'N/A'}</TableCell>
                           <TableCell>
                             <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
                               {item.status.replace('_', ' ')}

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -9,16 +10,37 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', roleName: 'Super Admin', users: 4, accessLevel: 'Full Access', status: 'active' },
-  { id: '2', roleName: 'Manager', users: 12, accessLevel: 'Department Only', status: 'active' },
-  { id: '3', roleName: 'Staff', users: 29, accessLevel: 'Read & Write Limited', status: 'active' },
-];
+interface Role {
+  id: string | number;
+  name: string; // Typically Spatie/Laravel-permission uses 'name'
+  roleName?: string;
+  users?: number;
+  accessLevel?: string;
+  status?: string;
+}
 
 export default function RolesPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalRoles, setTotalRoles] = useState(0);
 
+  useEffect(() => {
+    fetchRoles();
+  }, []);
 
+  const fetchRoles = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/admin/roles');
+      const roles = res.data.data || res.data;
+      setData(roles);
+      setTotalRoles(roles.length);
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -40,7 +62,7 @@ export default function RolesPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400">Total Roles</p>
-                  <h3 className="text-2xl font-bold text-white">8</h3>
+                  <h3 className="text-2xl font-bold text-white">{totalRoles}</h3>
                 </div>
               </CardContent>
             </Card>
@@ -84,23 +106,27 @@ export default function RolesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">Loading roles...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="h-24 text-center">No roles found.</TableCell>
                       </TableRow>
                     ) : (
                       data.map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium text-white">{item.roleName}</TableCell>
-                          <TableCell>{item.users}</TableCell>
+                          <TableCell className="font-medium text-white">{item.roleName || item.name}</TableCell>
+                          <TableCell>{item.users || 0}</TableCell>
                           <TableCell>
                             <span className={item.accessLevel === 'Full Access' ? 'text-red-400 font-medium' : 'text-slate-400'}>
-                              {item.accessLevel}
+                              {item.accessLevel || 'Standard'}
                             </span>
                           </TableCell>
                           <TableCell>
                             <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
-                              {item.status}
+                              {item.status || 'active'}
                             </Badge>
                           </TableCell>
                           <TableCell>

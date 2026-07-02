@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,39 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Hammer, CheckSquare, Clock } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', houseRef: 'Block A - Plot 12', stage: 'Foundation', completion: 100, status: 'completed', endDate: '2026-06-15' },
-  { id: '2', houseRef: 'Block A - Plot 13', stage: 'Framing', completion: 45, status: 'in_progress', endDate: '2026-07-20' },
-  { id: '3', houseRef: 'Block B - Plot 05', stage: 'Roofing', completion: 0, status: 'planned', endDate: '2026-08-10' },
-];
+interface ConstructionTask {
+  id: string | number;
+  houseRef?: string;
+  house_ref?: string;
+  stage: string;
+  completion: number;
+  status: string;
+  endDate?: string;
+  end_date?: string;
+}
 
 export default function ConstructionPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<ConstructionTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalTasks, setTotalTasks] = useState(0);
 
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/construction/progress');
+      const tasks = res.data.data || res.data;
+      setData(tasks);
+      setTotalTasks(tasks.length);
+    } catch (error) {
+      console.error('Failed to fetch construction tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -36,7 +60,7 @@ export default function ConstructionPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard 
               title="Active Sites" 
-              value={14} 
+              value={totalTasks} 
               icon={<Hammer className="w-5 h-5 text-indigo-400" />} 
             />
             <StatsCard 
@@ -68,14 +92,18 @@ export default function ConstructionPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading construction tasks...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">No construction tasks found.</TableCell>
                       </TableRow>
                     ) : (
                       data.map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium text-white">{item.houseRef}</TableCell>
+                          <TableCell className="font-medium text-white">{item.houseRef || item.house_ref}</TableCell>
                           <TableCell>{item.stage}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-3">
@@ -88,7 +116,7 @@ export default function ConstructionPage() {
                               <span className="text-xs font-mono">{item.completion}%</span>
                             </div>
                           </TableCell>
-                          <TableCell>{item.endDate}</TableCell>
+                          <TableCell>{item.endDate || item.end_date || 'N/A'}</TableCell>
                           <TableCell>
                             <Badge variant={
                               item.status === 'completed' ? 'default' : 

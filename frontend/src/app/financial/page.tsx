@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,39 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', txNumber: 'TX-8901', type: 'Income', category: 'House Sale', amount: '+$350,000', date: '2026-07-02', status: 'completed' },
-  { id: '2', txNumber: 'TX-8900', type: 'Expense', category: 'Material Purchase', amount: '-$14,500', date: '2026-07-01', status: 'completed' },
-  { id: '3', txNumber: 'TX-8899', type: 'Expense', category: 'Payroll', amount: '-$42,000', date: '2026-06-30', status: 'pending' },
-];
+interface Transaction {
+  id: string | number;
+  txNumber?: string;
+  tx_number?: string;
+  type: string;
+  category: string;
+  amount: string | number;
+  date: string;
+  status: string;
+}
 
 export default function FinancialPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalTransactions, setTotalTransactions] = useState(0);
 
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/financial/transactions');
+      const txs = res.data.data || res.data;
+      setData(txs);
+      setTotalTransactions(txs.length);
+    } catch (error) {
+      console.error('Failed to fetch transactions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -74,14 +98,18 @@ export default function FinancialPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading transactions...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">No transactions found.</TableCell>
                       </TableRow>
                     ) : (
                       data.map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-mono text-xs text-slate-400">{item.txNumber}</TableCell>
+                          <TableCell className="font-mono text-xs text-slate-400">{item.txNumber || item.tx_number}</TableCell>
                           <TableCell>{item.date}</TableCell>
                           <TableCell>
                             <span className={item.type === 'Income' ? 'text-emerald-400' : 'text-red-400'}>

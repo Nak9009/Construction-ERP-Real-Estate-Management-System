@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -9,16 +10,38 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Users, ShieldAlert, Key } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', name: 'Admin User', email: 'admin@erp.com', role: 'Super Admin', status: 'active', lastLogin: 'Just now' },
-  { id: '2', name: 'Project Manager', email: 'pm@erp.com', role: 'Manager', status: 'active', lastLogin: '2 hours ago' },
-  { id: '3', name: 'Site Supervisor', email: 'site@erp.com', role: 'Staff', status: 'inactive', lastLogin: '3 days ago' },
-];
+interface User {
+  id: string | number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  lastLogin: string;
+}
 
 export default function UsersPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalUsers, setTotalUsers] = useState(0);
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/admin/users');
+      // Adjust based on the actual API response shape
+      const users = res.data.data || res.data;
+      setData(users);
+      setTotalUsers(users.length);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -40,7 +63,7 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400">Total Users</p>
-                  <h3 className="text-2xl font-bold text-white">45</h3>
+                  <h3 className="text-2xl font-bold text-white">{totalUsers}</h3>
                 </div>
               </CardContent>
             </Card>
@@ -85,7 +108,11 @@ export default function UsersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading users...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">No users found.</TableCell>
                       </TableRow>

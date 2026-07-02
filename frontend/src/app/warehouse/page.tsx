@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,39 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { PackageSearch, AlertCircle, TrendingDown } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', sku: 'CEM-001', name: 'Portland Cement (50kg)', quantity: 450, unit: 'bags', minStock: 200, status: 'in_stock' },
-  { id: '2', sku: 'STL-012', name: 'Rebar 12mm', quantity: 45, unit: 'tons', minStock: 50, status: 'low_stock' },
-  { id: '3', sku: 'WD-005', name: 'Plywood 18mm', quantity: 0, unit: 'sheets', minStock: 100, status: 'out_of_stock' },
-];
+interface Material {
+  id: string | number;
+  sku: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  min_stock?: number;
+  minStock?: number;
+  status: string;
+}
 
 export default function WarehousePage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
 
+  useEffect(() => {
+    fetchMaterials();
+  }, []);
 
+  const fetchMaterials = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/warehouse/materials');
+      const materials = res.data.data || res.data;
+      setData(materials);
+      setTotalItems(materials.length);
+    } catch (error) {
+      console.error('Failed to fetch materials:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -36,7 +60,7 @@ export default function WarehousePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard 
               title="Total Items" 
-              value="1,245" 
+              value={totalItems} 
               icon={<PackageSearch className="w-5 h-5 text-indigo-400" />} 
             />
             <StatsCard 
@@ -68,7 +92,11 @@ export default function WarehousePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading materials...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">No materials found.</TableCell>
                       </TableRow>
@@ -78,7 +106,7 @@ export default function WarehousePage() {
                           <TableCell className="font-mono text-xs text-slate-400">{item.sku}</TableCell>
                           <TableCell className="font-medium text-white">{item.name}</TableCell>
                           <TableCell>{item.quantity} {item.unit}</TableCell>
-                          <TableCell>{item.minStock}</TableCell>
+                          <TableCell>{item.minStock || item.min_stock || 0}</TableCell>
                           <TableCell>
                             <Badge variant={
                               item.status === 'in_stock' ? 'default' : 

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,40 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { HardHat, Briefcase, FileSignature } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', company: 'BuildRite Contracting', trade: 'Electrical', rating: '4.8/5', status: 'active', activeWorkers: 12 },
-  { id: '2', company: 'Prime Plumbers', trade: 'Plumbing', rating: '4.5/5', status: 'active', activeWorkers: 8 },
-  { id: '3', company: 'Solid Foundation Co.', trade: 'Concrete', rating: '4.9/5', status: 'inactive', activeWorkers: 0 },
-];
+interface Contractor {
+  id: string | number;
+  company?: string;
+  name?: string;
+  trade?: string;
+  specialty?: string;
+  rating?: string | number;
+  status: string;
+  activeWorkers?: number;
+  active_workers?: number;
+}
 
 export default function ContractorsPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<Contractor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalContractors, setTotalContractors] = useState(0);
 
+  useEffect(() => {
+    fetchContractors();
+  }, []);
 
+  const fetchContractors = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/workforce/contractors');
+      const contractors = res.data.data || res.data;
+      setData(contractors);
+      setTotalContractors(contractors.length);
+    } catch (error) {
+      console.error('Failed to fetch contractors:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -36,7 +61,7 @@ export default function ContractorsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard 
               title="Total Contractors" 
-              value={45} 
+              value={totalContractors} 
               icon={<Briefcase className="w-5 h-5 text-indigo-400" />} 
             />
             <StatsCard 
@@ -68,17 +93,21 @@ export default function ContractorsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading contractors...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">No contractors found.</TableCell>
                       </TableRow>
                     ) : (
                       data.map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium text-white">{item.company}</TableCell>
-                          <TableCell>{item.trade}</TableCell>
-                          <TableCell>{item.activeWorkers}</TableCell>
-                          <TableCell className="text-amber-400 font-medium">{item.rating}</TableCell>
+                          <TableCell className="font-medium text-white">{item.company || item.name}</TableCell>
+                          <TableCell>{item.trade || item.specialty}</TableCell>
+                          <TableCell>{item.activeWorkers ?? item.active_workers ?? 0}</TableCell>
+                          <TableCell className="text-amber-400 font-medium">{item.rating || 'N/A'}</TableCell>
                           <TableCell>
                             <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
                               {item.status}

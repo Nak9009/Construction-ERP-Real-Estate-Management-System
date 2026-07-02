@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,38 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { ShoppingCart, Clock, CheckCircle } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', poNumber: 'PO-2026-045', supplier: 'BuildMart Wholesale', total: '$14,500', date: '2026-07-01', status: 'pending' },
-  { id: '2', poNumber: 'PO-2026-044', supplier: 'Steel Dynamics', total: '$32,000', date: '2026-06-28', status: 'approved' },
-  { id: '3', poNumber: 'PO-2026-043', supplier: 'LumberKing', total: '$8,200', date: '2026-06-25', status: 'fulfilled' },
-];
+interface PurchaseOrder {
+  id: string | number;
+  poNumber?: string;
+  po_number?: string;
+  supplier: string;
+  total: string | number;
+  date: string;
+  status: string;
+}
 
 export default function ProcurementPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<PurchaseOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalOrders, setTotalOrders] = useState(0);
 
+  useEffect(() => {
+    fetchPurchaseOrders();
+  }, []);
 
+  const fetchPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/procurement/orders');
+      const orders = res.data.data || res.data;
+      setData(orders);
+      setTotalOrders(orders.length);
+    } catch (error) {
+      console.error('Failed to fetch purchase orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -36,7 +59,7 @@ export default function ProcurementPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard 
               title="Active Orders" 
-              value={24} 
+              value={totalOrders} 
               icon={<ShoppingCart className="w-5 h-5 text-indigo-400" />} 
             />
             <StatsCard 
@@ -68,14 +91,18 @@ export default function ProcurementPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">Loading purchase orders...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">No purchase orders found.</TableCell>
                       </TableRow>
                     ) : (
                       data.map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium text-emerald-400">{item.poNumber}</TableCell>
+                          <TableCell className="font-medium text-emerald-400">{item.poNumber || item.po_number}</TableCell>
                           <TableCell>{item.supplier}</TableCell>
                           <TableCell>{item.date}</TableCell>
                           <TableCell className="font-bold">{item.total}</TableCell>

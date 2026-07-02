@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
@@ -9,16 +10,35 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PieChart, LineChart, FileDown } from 'lucide-react';
 
-const MOCK_DATA = [
-  { id: '1', name: 'Q2 Financial Summary', module: 'Finance', type: 'PDF', generatedDate: '2026-07-01' },
-  { id: '2', name: 'Material Usage Forecast', module: 'Warehouse', type: 'Excel', generatedDate: '2026-06-28' },
-  { id: '3', name: 'Site Incident Log', module: 'Quality', type: 'PDF', generatedDate: '2026-06-15' },
-];
+interface Report {
+  id: string | number;
+  name: string;
+  module: string;
+  type: string;
+  generatedDate?: string;
+  generated_date?: string;
+}
 
 export default function ReportsPage() {
-  const [data] = useState(MOCK_DATA);
+  const [data, setData] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchReports();
+  }, []);
 
+  const fetchReports = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/reports');
+      const reports = res.data.data || res.data;
+      setData(reports);
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 flex">
       <Sidebar />
@@ -81,7 +101,11 @@ export default function ReportsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">Loading reports...</TableCell>
+                      </TableRow>
+                    ) : data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="h-24 text-center">No reports generated.</TableCell>
                       </TableRow>
@@ -93,7 +117,7 @@ export default function ReportsPage() {
                             <Badge variant="default">{item.module}</Badge>
                           </TableCell>
                           <TableCell className="text-slate-400">{item.type}</TableCell>
-                          <TableCell>{item.generatedDate}</TableCell>
+                          <TableCell>{item.generatedDate || item.generated_date}</TableCell>
                           <TableCell>
                             <Button variant="ghost" size="sm" className="h-8 text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
                               <FileDown className="w-3.5 h-3.5" />
