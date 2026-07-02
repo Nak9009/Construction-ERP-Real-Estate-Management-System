@@ -12,9 +12,17 @@ use App\Domain\Construction\Enums\InspectionResult;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\InventoryService;
 
 class ConstructionController extends Controller
 {
+    protected $inventoryService;
+
+    public function __construct(InventoryService $inventoryService)
+    {
+        $this->inventoryService = $inventoryService;
+    }
+
     /**
      * Update construction stage progress and status.
      */
@@ -92,17 +100,12 @@ class ConstructionController extends Controller
 
         // Adjust material stock in warehouse
         if (!empty($validated['quantity_used'])) {
-            $material = $stageMaterial->material;
-            $material->decrement('current_stock', $validated['quantity_used']);
-
-            // Create stock movement
-            $material->stockMovements()->create([
-                'type' => 'out',
-                'quantity' => $validated['quantity_used'],
-                'reference_type' => ConstructionStage::class,
-                'reference_id' => $stage->id,
-                'moved_by' => $request->user()->employee?->id,
-            ]);
+            $this->inventoryService->processMaterialUsage(
+                $stage,
+                $stageMaterial,
+                $validated['quantity_used'],
+                $request->user()->employee?->id
+            );
         }
 
         return response()->json([

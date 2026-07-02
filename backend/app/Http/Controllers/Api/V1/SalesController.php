@@ -16,9 +16,17 @@ use App\Http\Resources\Api\V1\ReservationResource;
 use App\Http\Resources\Api\V1\BookingResource;
 use App\Http\Resources\Api\V1\SalesContractResource;
 use App\Http\Resources\Api\V1\CommissionResource;
+use App\Services\SalesService;
 
 class SalesController extends Controller
 {
+    protected $salesService;
+
+    public function __construct(SalesService $salesService)
+    {
+        $this->salesService = $salesService;
+    }
+
     /**
      * Display a listing of leads.
      */
@@ -152,6 +160,9 @@ class SalesController extends Controller
         ]);
 
         $contract = SalesContract::create($validated);
+
+        // Process contract business logic (Installments & Commission)
+        $this->salesService->processNewContract($contract);
 
         return response()->json([
             'message' => 'Sales contract created successfully',
