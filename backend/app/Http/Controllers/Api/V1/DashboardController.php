@@ -53,7 +53,7 @@ class DashboardController extends Controller
 
         // 5. Monthly Expenses Trend
         $monthlyExpenses = Expense::select(
-            DB::raw("strftime('%Y-%m', created_at) as month"), // SQLite syntax
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), // MySQL syntax
             DB::raw('sum(amount) as total')
         )
             ->where('status', 'approved')
