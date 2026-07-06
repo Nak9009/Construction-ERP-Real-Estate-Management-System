@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { useHouses } from '../hooks/useHouses';
 
 export function HousesView() {
@@ -92,23 +93,23 @@ export function HousesView() {
                           <TableCell className="font-medium text-emerald-400">{house.house_number}</TableCell>
                           <TableCell>
                             {house.house_type ? (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">
+                              <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-transparent">
                                 {house.house_type.name}
-                              </span>
+                              </Badge>
                             ) : (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-neutral-500/20 text-neutral-400">
+                              <Badge variant="outline" className="bg-neutral-500/20 text-neutral-400 border-transparent">
                                 Custom Build
-                              </span>
+                              </Badge>
                             )}
                           </TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            <Badge variant="outline" className={`border-transparent ${
                               house.status === 'completed' || house.status === 'available' ? 'bg-emerald-500/20 text-emerald-400' :
                               house.status === 'planned' ? 'bg-yellow-500/20 text-yellow-400' :
                               'bg-blue-500/20 text-blue-400'
                             }`}>
                               {house.status.toUpperCase()}
-                            </span>
+                            </Badge>
                           </TableCell>
                           <TableCell>${house.construction_cost?.toLocaleString() || '0'}</TableCell>
                           <TableCell className="font-bold">${house.selling_price?.toLocaleString() || '0'}</TableCell>

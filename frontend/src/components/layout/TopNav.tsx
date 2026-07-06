@@ -3,6 +3,8 @@
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { Bell, Search, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export function TopNav() {
   const pathname = usePathname();
@@ -53,18 +55,18 @@ export function TopNav() {
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <Search className="w-4 h-4 text-slate-500" />
           </span>
-          <input
+          <Input
             type="text"
             placeholder="Search ERP..."
-            className="w-full pl-9 pr-4 py-1.5 bg-slate-900/40 border border-slate-900 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all duration-300"
+            className="w-full pl-9 pr-4 h-8 bg-slate-900/40 border-slate-900 rounded-xl text-xs text-white placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-cyan-500/50"
           />
         </div>
 
         {/* Notifications */}
-        <button className="relative p-2 text-slate-400 hover:text-white bg-slate-900/30 border border-slate-900 hover:border-slate-800 rounded-xl transition-all duration-300">
+        <Button variant="ghost" size="icon" className="relative text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl">
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-gradient-to-tr from-cyan-400 to-indigo-500 rounded-full shadow-lg shadow-cyan-400/50 animate-pulse"></span>
-        </button>
+          <span className="absolute top-2 right-2 w-2 h-2 bg-gradient-to-tr from-cyan-400 to-indigo-500 rounded-full shadow-lg shadow-cyan-400/50 animate-pulse"></span>
+        </Button>
 
         {/* Profile Info */}
         <div className="flex items-center gap-3 pl-4 border-l border-slate-900">

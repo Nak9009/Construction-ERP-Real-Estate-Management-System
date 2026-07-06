@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { useProjects } from '../hooks/useProjects';
 
 export function ProjectsView() {
@@ -68,13 +69,13 @@ export function ProjectsView() {
                         <TableRow key={p.id}>
                           <TableCell className="font-medium">{p.name}</TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            <Badge variant="outline" className={`border-transparent ${
                               p.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
                               p.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' :
                               'bg-neutral-500/20 text-neutral-400'
                             }`}>
                               {p.status ? p.status.replace('_', ' ').toUpperCase() : 'UNKNOWN'}
-                            </span>
+                            </Badge>
                           </TableCell>
                           <TableCell>${p.budget ? Number(p.budget).toLocaleString() : '0'}</TableCell>
                           <TableCell>{p.start_date ? p.start_date.substring(0, 10) : 'N/A'}</TableCell>

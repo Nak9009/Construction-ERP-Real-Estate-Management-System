@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { useSales } from '../hooks/useSales';
 
 export function SalesView() {
@@ -102,13 +103,13 @@ export function SalesView() {
                           <TableCell className="font-bold">${Number(c.amount).toLocaleString()}</TableCell>
                           <TableCell>{c.signed_date ? c.signed_date.substring(0, 10) : 'N/A'}</TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            <Badge variant="outline" className={`border-transparent ${
                               c.status === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
                               c.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
                               'bg-neutral-500/20 text-neutral-400'
                             }`}>
                               {c.status.toUpperCase()}
-                            </span>
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right space-x-2">
                             <Button variant="ghost" size="sm" className="text-blue-400" onClick={() => handleOpenModal(c)}>Edit</Button>

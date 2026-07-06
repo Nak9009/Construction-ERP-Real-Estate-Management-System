@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
+import { Badge } from '@/components/ui/badge';
 
 // We import standard recharts components dynamically to avoid SSR errors
 import {
@@ -128,15 +129,15 @@ export default function DashboardPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'in_progress':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">In Progress</span>;
+        return <Badge variant="outline" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20">In Progress</Badge>;
       case 'completed':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Completed</span>;
+        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Completed</Badge>;
       case 'delayed':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Delayed</span>;
+        return <Badge variant="outline" className="bg-rose-500/10 text-rose-400 border-rose-500/20">Delayed</Badge>;
       case 'planning':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Planning</span>;
+        return <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20">Planning</Badge>;
       default:
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/10 text-slate-400">Unknown</span>;
+        return <Badge variant="outline" className="bg-slate-500/10 text-slate-400 border-transparent">Unknown</Badge>;
     }
   };
 

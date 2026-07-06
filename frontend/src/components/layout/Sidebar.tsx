@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { authService } from '@/features/auth/services/authService';
+import { Button } from '@/components/ui/button';
 
 type NavItem = {
   name: string;
@@ -163,13 +164,14 @@ export const Sidebar: React.FC = () => {
           
           return (
             <div key={group.title} className="flex flex-col gap-1">
-              <button 
+              <Button 
+                variant="ghost"
                 onClick={() => toggleGroup(group.title)}
-                className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider hover:text-slate-300 transition-colors w-full text-left"
+                className="flex items-center justify-between px-3 py-2 h-auto text-xs font-semibold text-slate-500 uppercase tracking-wider hover:text-slate-300 hover:bg-transparent transition-colors w-full"
               >
                 {group.title}
                 {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              </button>
+              </Button>
               
               <div className={`flex flex-col gap-1 overflow-hidden transition-all duration-300 ${isExpanded || hasActiveChild ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
                 {group.items.map((item) => {
@@ -197,13 +199,14 @@ export const Sidebar: React.FC = () => {
       </nav>
       
       <div className="p-4 border-t border-slate-900 bg-slate-950">
-        <button
+        <Button
+          variant="outline"
           onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 bg-slate-900 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 border border-slate-800 transition-all duration-300"
+          className="flex items-center justify-center gap-2 w-full rounded-xl text-slate-400 bg-slate-900 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 border-slate-800 transition-all duration-300"
         >
           <LogOut className="h-4 w-4" />
           Logout
-        </button>
+        </Button>
       </div>
     </aside>
   );

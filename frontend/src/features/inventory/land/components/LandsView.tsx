@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { useLands } from '../hooks/useLands';
 
 export function LandsView() {
@@ -94,13 +95,13 @@ export function LandsView() {
                           <TableCell className="font-bold">${land.purchase_price?.toLocaleString() || '0'}</TableCell>
                           <TableCell>
                             {land.project ? (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                              <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-transparent">
                                 {land.project.name}
-                              </span>
+                              </Badge>
                             ) : (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-neutral-500/20 text-neutral-400">
+                              <Badge variant="outline" className="bg-neutral-500/20 text-neutral-400 border-transparent">
                                 Unassigned
-                              </span>
+                              </Badge>
                             )}
                           </TableCell>
                           <TableCell className="text-right space-x-2">
