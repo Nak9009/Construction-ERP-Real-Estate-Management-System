@@ -1,146 +1,223 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Home, MapPin, Square } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Search, MapPin, ZoomIn, ZoomOut, Maximize, Filter, Loader2, Home } from 'lucide-react';
 import { useLotMap } from '../hooks/useLotMap';
+import { LotMapBackground } from './LotMapBackground';
 
-// Helper to determine the color of a lot based on status
+// Mapplic specific colors
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
-    case 'available': return 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/30';
-    case 'reserved': return 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/30';
-    case 'sold': return 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30';
-    case 'building': 
-    case 'under_construction': return 'bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30';
-    case 'completed': return 'bg-neutral-500/20 border-neutral-500/50 text-neutral-400 hover:bg-neutral-500/30';
-    default: return 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700';
+    case 'available': return { fill: 'fill-emerald-600', hover: 'hover:fill-emerald-500', text: 'text-emerald-600', dot: 'bg-emerald-600' };
+    case 'reserved': return { fill: 'fill-yellow-500', hover: 'hover:fill-yellow-400', text: 'text-yellow-500', dot: 'bg-yellow-500' };
+    case 'sold': return { fill: 'fill-neutral-400', hover: 'hover:fill-neutral-300', text: 'text-neutral-500', dot: 'bg-neutral-400' };
+    case 'building': return { fill: 'fill-blue-500', hover: 'hover:fill-blue-400', text: 'text-blue-500', dot: 'bg-blue-500' };
+    default: return { fill: 'fill-neutral-200', hover: 'hover:fill-neutral-300', text: 'text-neutral-500', dot: 'bg-neutral-200' };
   }
+};
+
+// Helper to calculate approximate center of an SVG path for label placement
+const getPathCenter = (pathData: string) => {
+  if (!pathData) return { x: 0, y: 0 };
+  const points = pathData.match(/-?\d+(\.\d+)?/g);
+  if (!points || points.length < 2) return { x: 0, y: 0 };
+  
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i < points.length; i += 2) {
+    const x = parseFloat(points[i]);
+    const y = parseFloat(points[i + 1] || '0');
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return { x: minX + (maxX - minX) / 2, y: minY + (maxY - minY) / 2 };
 };
 
 export function LotMapView() {
   const {
-    lands,
-    selectedLandId,
-    setSelectedLandId,
     lotMapData,
     loading,
     selectedLot,
     isModalOpen,
     handleLotClick,
-    closeLotModal
+    closeLotModal,
+    searchQuery,
+    setSearchQuery,
+    showAvailableOnly,
+    setShowAvailableOnly,
+    filteredLots
   } = useLotMap();
+
+  // SVG Pan/Zoom mock state
+  const [zoom, setZoom] = useState(1);
+
+  const handleZoomIn = () => setZoom(z => Math.min(z + 0.2, 3));
+  const handleZoomOut = () => setZoom(z => Math.max(z - 0.2, 0.5));
+  const handleResetZoom = () => setZoom(1);
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
-            <MapPin className="h-8 w-8 text-primary" />
-            Interactive Lot Map
+      <div className="flex flex-col h-[calc(100vh-8rem)]">
+        
+        {/* Header Area */}
+        <div className="flex items-center gap-2 mb-4">
+          <MapPin className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+            Interactive Subdivision Map
           </h1>
-          
-          <div className="w-full sm:w-72">
-            <Select value={selectedLandId} onValueChange={setSelectedLandId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a Land Asset" />
-              </SelectTrigger>
-              <SelectContent>
-                {lands.map(land => (
-                  <SelectItem key={land.id} value={land.id}>
-                    {land.title_number || 'Unnamed Land'} {land.project?.name ? `(${land.project.name})` : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {lotMapData && <span className="ml-2 text-neutral-500">- {lotMapData.blocks?.[0]?.name}</span>}
         </div>
 
-        {/* Legend */}
-        <Card>
-          <CardContent className="py-4">
-            <div className="flex flex-wrap gap-4 text-sm items-center">
-              <span className="font-semibold text-neutral-300 mr-2">Legend:</span>
-              <div className="flex items-center gap-1"><div className="w-4 h-4 rounded bg-emerald-500/20 border border-emerald-500/50"></div> Available</div>
-              <div className="flex items-center gap-1"><div className="w-4 h-4 rounded bg-yellow-500/20 border border-yellow-500/50"></div> Reserved</div>
-              <div className="flex items-center gap-1"><div className="w-4 h-4 rounded bg-red-500/20 border border-red-500/50"></div> Sold</div>
-              <div className="flex items-center gap-1"><div className="w-4 h-4 rounded bg-blue-500/20 border border-blue-500/50"></div> Building</div>
-              <div className="flex items-center gap-1"><div className="w-4 h-4 rounded bg-neutral-500/20 border border-neutral-500/50"></div> Completed</div>
-              <div className="flex items-center gap-1 ml-4"><Home className="w-4 h-4 text-white" /> House Present</div>
+        {/* Main Content: Split Screen */}
+        <div className="flex flex-1 gap-6 overflow-hidden">
+          
+          {/* Sidebar */}
+          <Card className="w-80 flex flex-col overflow-hidden bg-background border-r">
+            <div className="p-4 space-y-4 border-b">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  type="text" 
+                  placeholder="Search lots..." 
+                  className="pl-9 bg-neutral-100 dark:bg-neutral-900 border-none rounded-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              {/* Filters */}
+              <div className="flex gap-2">
+                <Badge variant="secondary" className="rounded-full px-4 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-800">Phase 1</Badge>
+                <Badge variant="outline" className="rounded-full px-4 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 opacity-50">Phase 2</Badge>
+              </div>
+
+              {/* Toggle Available */}
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-sm font-medium">Show available</span>
+                <Switch 
+                  checked={showAvailableOnly} 
+                  onCheckedChange={setShowAvailableOnly} 
+                />
+              </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Map Grid area */}
-        {loading ? (
-          <div className="h-64 flex items-center justify-center text-neutral-400">Loading map data...</div>
-        ) : !lotMapData ? (
-          <div className="h-64 flex items-center justify-center text-neutral-400">No land selected or no data available.</div>
-        ) : (
-          <div className="space-y-8">
-            {lotMapData.blocks?.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-neutral-400">
-                  <Square className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                  This land has not been subdivided into blocks and lots yet.
-                </CardContent>
-              </Card>
-            ) : (
-              lotMapData.blocks?.map(block => (
-                <Card key={block.id} className="border-2 border-neutral-800/50 overflow-hidden bg-neutral-900/50">
-                  <CardHeader className="bg-neutral-950/50 border-b border-neutral-800/50 pb-4">
-                    <CardTitle className="text-xl flex items-center justify-between">
-                      <span>{block.name}</span>
-                      <Badge variant="secondary">{block.lots?.length || 0} Lots</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                      {block.lots?.map(lot => (
-                        <div
-                          key={lot.id}
-                          onClick={() => handleLotClick(lot)}
-                          className={`
-                            relative cursor-pointer rounded-lg border-2 p-3 aspect-square
-                            flex flex-col items-center justify-center text-center transition-all duration-200
-                            ${getStatusColor(lot.status)}
-                          `}
-                          title={`Lot ${lot.lot_number} - ${lot.status}`}
-                        >
-                          <span className="font-bold text-lg mb-1">{lot.lot_number}</span>
-                          <span className="text-xs opacity-75">{lot.area_sqm} sqm</span>
-                          
-                          {lot.house && (
-                            <div className="absolute top-2 right-2">
-                              <Home className="w-4 h-4 opacity-80" />
-                            </div>
-                          )}
+            {/* List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {filteredLots.length === 0 ? (
+                <div className="text-center text-sm text-neutral-500 py-8">No lots found.</div>
+              ) : (
+                filteredLots.map(lot => {
+                  const colors = getStatusColor(lot.status);
+                  return (
+                    <div 
+                      key={lot.id} 
+                      onClick={() => handleLotClick(lot)}
+                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer transition-colors"
+                    >
+                      <div className="text-2xl font-black text-neutral-300 dark:text-neutral-700 w-12 text-center">
+                        {lot.lot_number}
+                      </div>
+                      <div>
+                        <div className="font-bold">Lot {lot.lot_number}</div>
+                        <div className={`text-sm flex items-center gap-1.5 ${colors.text}`}>
+                          <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                          {lot.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        )}
+                  );
+                })
+              )}
+            </div>
+          </Card>
 
+          {/* Map Area */}
+          <Card className="flex-1 relative overflow-hidden bg-[#f4f7f6] dark:bg-neutral-950 flex items-center justify-center">
+            {loading ? (
+               <div className="flex flex-col items-center gap-2 text-neutral-400">
+                 <Loader2 className="animate-spin w-8 h-8" />
+                 <span>Loading map...</span>
+               </div>
+            ) : !lotMapData ? (
+               <div className="text-neutral-400">No layout available.</div>
+            ) : (
+              <>
+                {/* SVG Renderer */}
+                <div 
+                  className="w-full h-full flex items-center justify-center transition-transform duration-300 ease-out cursor-grab active:cursor-grabbing"
+                  style={{ transform: `scale(${zoom})` }}
+                >
+                  <svg viewBox="0 0 1164 905" className="w-full h-full max-h-[800px] drop-shadow-xl">
+                    <LotMapBackground />
+                    {/* Lots */}
+                    {filteredLots.map((lot: any) => {
+                      const colors = getStatusColor(lot.status);
+                      const center = getPathCenter(lot.svg_path || '');
+                      
+                      return (
+                        <g 
+                          key={lot.id} 
+                          className="cursor-pointer group"
+                          onClick={() => handleLotClick(lot)}
+                        >
+                          <path 
+                            d={lot.svg_path || "M0,0"} 
+                            className={`transition-all duration-300 stroke-white dark:stroke-neutral-950 stroke-[3px] ${colors.fill} ${colors.hover}`}
+                          />
+                          <text 
+                            x={center.x || "50%"} 
+                            y={center.y || "50%"} 
+                            className="fill-white font-bold text-[18px] pointer-events-none"
+                            textAnchor="middle" 
+                            dominantBaseline="central"
+                          >
+                            {lot.lot_number}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+
+                {/* Map Controls */}
+                <div className="absolute bottom-6 right-6 flex flex-col gap-2 bg-white dark:bg-neutral-900 rounded-lg shadow-lg border p-1">
+                  <button onClick={handleResetZoom} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded text-neutral-600 transition">
+                    <Maximize className="w-5 h-5" />
+                  </button>
+                  <div className="w-full h-px bg-neutral-200 dark:bg-neutral-800" />
+                  <button onClick={handleZoomIn} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded text-neutral-600 transition">
+                    <ZoomIn className="w-5 h-5" />
+                  </button>
+                  <button onClick={handleZoomOut} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded text-neutral-600 transition">
+                    <ZoomOut className="w-5 h-5" />
+                  </button>
+                </div>
+              </>
+            )}
+          </Card>
+        </div>
       </div>
 
       {/* Lot Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={(open) => !open && closeLotModal()}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>Lot Details: {selectedLot?.lot_number}</span>
-              <Badge className={getStatusColor(selectedLot?.status)}>{selectedLot?.status}</Badge>
+            <DialogTitle className="flex items-center justify-between text-2xl">
+              <span>Lot {selectedLot?.lot_number}</span>
             </DialogTitle>
             <DialogDescription>
-              Detailed information for this specific lot.
+              <div className={`mt-2 inline-flex items-center gap-1.5 font-medium px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 ${getStatusColor(selectedLot?.status).text}`}>
+                <div className={`w-2 h-2 rounded-full ${getStatusColor(selectedLot?.status).dot}`} />
+                {selectedLot?.status.replace('_', ' ').toUpperCase()}
+              </div>
             </DialogDescription>
           </DialogHeader>
           
@@ -148,39 +225,37 @@ export function LotMapView() {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <div className="text-sm text-neutral-400">Area</div>
-                  <div className="font-medium">{selectedLot.area_sqm} sqm</div>
+                  <div className="text-sm text-neutral-500">Area</div>
+                  <div className="font-medium text-lg">{selectedLot.area_sqm} m²</div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-sm text-neutral-400">Dimensions</div>
-                  <div className="font-medium">{selectedLot.width || '?'} x {selectedLot.length || '?'}</div>
+                  <div className="text-sm text-neutral-500">Price</div>
+                  <div className="font-medium text-lg text-emerald-600">
+                    {selectedLot.house ? `$${selectedLot.house.selling_price?.toLocaleString()}` : 'N/A'}
+                  </div>
                 </div>
               </div>
 
               {selectedLot.house ? (
                 <div className="mt-4 pt-4 border-t border-border space-y-3">
                   <h4 className="font-semibold flex items-center gap-2">
-                    <Home className="w-4 h-4" /> 
+                    <Home className="w-4 h-4 text-primary" /> 
                     House Details
                   </h4>
-                  <div className="grid grid-cols-2 gap-4 bg-neutral-900 p-3 rounded-md border border-border">
+                  <div className="grid grid-cols-2 gap-4 bg-neutral-50 dark:bg-neutral-900 p-4 rounded-xl border">
                     <div className="space-y-1">
-                      <div className="text-xs text-neutral-400">House No.</div>
-                      <div className="font-medium">{selectedLot.house.house_number}</div>
+                      <div className="text-xs text-neutral-500 uppercase tracking-wider">House No.</div>
+                      <div className="font-bold">{selectedLot.house.house_number}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-xs text-neutral-400">Status</div>
-                      <div><Badge variant="outline">{selectedLot.house.status}</Badge></div>
-                    </div>
-                    <div className="space-y-1 col-span-2">
-                      <div className="text-xs text-neutral-400">Selling Price</div>
-                      <div className="font-medium text-emerald-400">${selectedLot.house.selling_price?.toLocaleString() || '0'}</div>
+                      <div className="text-xs text-neutral-500 uppercase tracking-wider">Status</div>
+                      <div className="font-medium">{selectedLot.house.status}</div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <div className="text-sm text-neutral-400 italic">No house built on this lot yet.</div>
+                <div className="mt-6 pt-4 border-t border-border text-center">
+                  <div className="text-sm text-neutral-500 italic">No house built on this lot yet.</div>
                 </div>
               )}
             </div>

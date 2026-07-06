@@ -21,6 +21,7 @@ class Lot extends Model
         'lat',
         'lng',
         'status',
+        'svg_path',
     ];
 
     protected $casts = [

@@ -3,13 +3,18 @@ import { lotMapService, LotMapData } from '../services/lotMapService';
 import { landService } from '@/features/inventory/land/services/landService';
 
 export function useLotMap() {
-  const [lands, setLands] = useState<{ id: string; title_number: string; project?: { name: string } }[]>([]);
+  const [lands, setLands] = useState<any[]>([]);
   const [selectedLandId, setSelectedLandId] = useState<string>('');
   const [lotMapData, setLotMapData] = useState<LotMapData | null>(null);
   const [loading, setLoading] = useState(true);
   
   const [selectedLot, setSelectedLot] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // New Mapplic Style Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  const [activePhase, setActivePhase] = useState<string | null>(null);
 
   // Fetch list of lands for the selector
   useEffect(() => {
@@ -58,6 +63,15 @@ export function useLotMap() {
     setSelectedLot(null);
   };
 
+  // Compute filtered lots from all blocks
+  const allLots = lotMapData?.blocks?.flatMap(b => b.lots) || [];
+  
+  const filteredLots = allLots.filter(lot => {
+    const matchesSearch = lot.lot_number.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesAvailable = showAvailableOnly ? lot.status === 'available' : true;
+    return matchesSearch && matchesAvailable;
+  });
+
   return {
     lands,
     selectedLandId,
@@ -67,6 +81,14 @@ export function useLotMap() {
     selectedLot,
     isModalOpen,
     handleLotClick,
-    closeLotModal
+    closeLotModal,
+    searchQuery,
+    setSearchQuery,
+    showAvailableOnly,
+    setShowAvailableOnly,
+    activePhase,
+    setActivePhase,
+    filteredLots,
+    allLots
   };
 }

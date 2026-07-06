@@ -15,12 +15,13 @@ export interface LotMapData {
     id: string;
     name: string;
     total_lots: number;
-    lots: {
-      id: string;
-      lot_number: string;
-      area_sqm: number;
-      status: string;
-      house?: {
+      lots: {
+        id: string;
+        lot_number: string;
+        area_sqm: number;
+        status: string;
+        svg_path?: string;
+        house?: {
         id: string;
         house_number: string;
         status: string;
