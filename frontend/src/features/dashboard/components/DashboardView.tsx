@@ -1,6 +1,5 @@
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import React from 'react';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Users, Building2, DollarSign, Wrench, Activity } from 'lucide-react';
@@ -19,11 +18,8 @@ export function DashboardView() {
   const { metrics, isLoading, chartData } = useDashboard();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 flex">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <TopNav />
-        <main className="p-6 md:p-8 flex-1 overflow-y-auto">
+    <DashboardLayout>
+        <div className="space-y-6">
           
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard Overview</h1>
@@ -100,8 +96,7 @@ export function DashboardView() {
               </CardContent>
             </Card>
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
+      </DashboardLayout>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 import React from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';

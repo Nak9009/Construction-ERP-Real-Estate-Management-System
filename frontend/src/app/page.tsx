@@ -1,40 +1,49 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopNav } from '@/components/layout/TopNav';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
-  TrendingUp,
   Activity,
+  Briefcase,
+  Calendar as CalendarIcon,
   Home,
   AlertTriangle,
-  DollarSign,
-  Briefcase,
-  PieChart as PieIcon,
-  BarChart3,
-  Calendar,
-  Layers,
-  MapPin,
-  Clock
+  Download
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { Badge } from '@/components/ui/badge';
-
-// We import standard recharts components dynamically to avoid SSR errors
+import { Button } from '@/components/ui/button';
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  BarChart,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import {
   Bar,
+  BarChart,
+  ResponsiveContainer,
   XAxis,
   YAxis,
-  Tooltip,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  Tooltip
 } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -86,27 +95,22 @@ export default function DashboardPage() {
     }
   ]);
 
-  // Chart data definitions
   const budgetVsActualData = [
-    { name: 'Green City', budget: 250, actual: 128 },
-    { name: 'Mekong Royal', budget: 480, actual: 290 },
-    { name: 'Sen Sok Plaza', budget: 150, actual: 15 },
+    { name: 'Green City', budget: 2500000, actual: 1280000 },
+    { name: 'Mekong Royal', budget: 4800000, actual: 2900000 },
+    { name: 'Sen Sok', budget: 1500000, actual: 150000 },
   ];
 
-  const houseStatusData = [
-    { name: 'Completed', value: 45, color: '#10b981' },
-    { name: 'Building', value: 65, color: '#06b6d4' },
-    { name: 'Available', value: 10, color: '#6366f1' },
-  ];
-
-  const cashFlowData = [
-    { month: 'Jan', revenue: 40, expenses: 30 },
-    { month: 'Feb', revenue: 55, expenses: 45 },
-    { month: 'Mar', revenue: 75, expenses: 50 },
-    { month: 'Apr', revenue: 90, expenses: 65 },
-    { month: 'May', revenue: 110, expenses: 70 },
-    { month: 'Jun', revenue: 135, expenses: 80 },
-  ];
+  const chartConfig = {
+    budget: {
+      label: 'Planned Budget',
+      color: 'hsl(var(--chart-1))',
+    },
+    actual: {
+      label: 'Actual Expenses',
+      color: 'hsl(var(--chart-2))',
+    },
+  };
 
   useEffect(() => {
     // Attempt to load live data if authenticated
@@ -126,245 +130,173 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return <Badge variant="outline" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20">In Progress</Badge>;
-      case 'completed':
-        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Completed</Badge>;
-      case 'delayed':
-        return <Badge variant="outline" className="bg-rose-500/10 text-rose-400 border-rose-500/20">Delayed</Badge>;
-      case 'planning':
-        return <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20">Planning</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-500/10 text-slate-400 border-transparent">Unknown</Badge>;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
-      {/* Sidebar Layout */}
-      <Sidebar />
-
-      {/* Main Content Area */}
-      <div className="flex-1 pl-64 flex flex-col min-h-screen">
-        <TopNav />
-
-        {/* Inner Content Padding */}
-        <main className="flex-1 p-8 pt-24 space-y-8 max-w-7xl w-full mx-auto">
-          {/* Welcome Title */}
-          <div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-white">
-              Executive Overview
-            </h2>
-            <p className="text-slate-400 text-xs mt-1">
-              Real-time analytics and construction progress monitors.
-            </p>
+    <DashboardLayout>
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex items-center justify-between space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" className="hidden sm:flex">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Jan 20, 2026 - Feb 09, 2026
+            </Button>
+            <Button>
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </Button>
           </div>
-
-          {/* Stat Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Active Projects */}
-            <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-bl-full transition-all duration-300 group-hover:bg-cyan-500/10"></div>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400 border border-cyan-500/20">
-                  <Briefcase className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active Projects</span>
-                  <h3 className="text-2xl font-black text-white mt-0.5">{stats.active_projects}</h3>
-                </div>
-              </div>
+        </div>
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics" disabled>
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="projects" disabled>
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="reports" disabled>
+              Reports
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Budget Cap
+                  </CardTitle>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    className="h-4 w-4 text-muted-foreground"
+                  >
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${(stats.total_budget / 1000000).toFixed(1)}M</div>
+                  <p className="text-xs text-muted-foreground">
+                    +20.1% from last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Active Projects
+                  </CardTitle>
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.active_projects}</div>
+                  <p className="text-xs text-muted-foreground">
+                    1 project delayed
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Houses</CardTitle>
+                  <Home className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_houses}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats.houses_completed} completed units
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Budget Used
+                  </CardTitle>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.budget_used_percentage}%</div>
+                  <p className="text-xs text-muted-foreground">
+                    +4% since last quarter
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-
-            {/* Total Houses */}
-            <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full transition-all duration-300 group-hover:bg-indigo-500/10"></div>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20">
-                  <Home className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Total Houses</span>
-                  <h3 className="text-2xl font-black text-white mt-0.5">{stats.total_houses}</h3>
-                </div>
-              </div>
-            </div>
-
-            {/* Construction Progress */}
-            <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full transition-all duration-300 group-hover:bg-emerald-500/10"></div>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
-                  <Activity className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Completed Houses</span>
-                  <h3 className="text-2xl font-black text-white mt-0.5">{stats.houses_completed}</h3>
-                </div>
-              </div>
-            </div>
-
-            {/* Delayed Alerts */}
-            <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-bl-full transition-all duration-300 group-hover:bg-rose-500/10"></div>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 border border-rose-500/20">
-                  <AlertTriangle className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Delayed Projects</span>
-                  <h3 className="text-2xl font-black text-white mt-0.5">{stats.delayed_projects}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Budget Widget Card */}
-          <div className="glass-card p-6 rounded-2xl relative overflow-hidden">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
-                  <DollarSign className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-white">Portfolio Budget Monitor</h4>
-                  <p className="text-xs text-slate-400">Total approved funds and overhead costs logged.</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-8">
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Budget Cap</span>
-                  <span className="text-lg font-bold text-white">${stats.total_budget.toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Expenses Approved</span>
-                  <span className="text-lg font-bold text-cyan-400">${stats.total_expenses.toLocaleString()}</span>
-                </div>
-                <div className="w-24">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Used %</span>
-                  <div className="w-full bg-slate-900 rounded-full h-2 border border-slate-800">
-                    <div
-                      className="bg-gradient-to-r from-cyan-400 to-indigo-500 h-1.5 rounded-full"
-                      style={{ width: `${stats.budget_used_percentage}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-xs font-semibold text-white mt-1 block">{stats.budget_used_percentage}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Chart 1: Budget vs Actual */}
-            <div className="glass-card p-6 rounded-2xl lg:col-span-2 space-y-4">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="w-4 h-4 text-cyan-400" />
-                <h4 className="text-sm font-semibold text-white">Project Budget vs Actual ($K)</h4>
-              </div>
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={budgetVsActualData}>
-                    <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ background: '#090d16', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px', color: '#fff' }} />
-                    <Bar dataKey="budget" fill="#4f46e5" radius={[4, 4, 0, 0]} name="Planned Budget" />
-                    <Bar dataKey="actual" fill="#06b6d4" radius={[4, 4, 0, 0]} name="Expenses Incurred" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Chart 2: House Status */}
-            <div className="glass-card p-6 rounded-2xl space-y-4">
-              <div className="flex items-center gap-3">
-                <PieIcon className="w-4 h-4 text-indigo-400" />
-                <h4 className="text-sm font-semibold text-white">Housing Inventory</h4>
-              </div>
-              <div className="h-64 w-full relative flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={houseStatusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {houseStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ background: '#090d16', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px', color: '#fff' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                {/* Central legend */}
-                <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-2xl font-black text-white">{stats.total_houses}</span>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase">Units</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Projects List */}
-          <div className="glass-card p-6 rounded-2xl space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Layers className="w-4 h-4 text-cyan-400" />
-                <h4 className="text-sm font-semibold text-white">Active Projects Monitoring</h4>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((proj) => (
-                <div key={proj.id} className="bg-slate-950/50 border border-slate-900/60 p-5 rounded-2xl space-y-4 hover:border-slate-800 transition-all duration-300">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h5 className="font-bold text-white text-sm">{proj.name}</h5>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-1">
-                        <MapPin className="w-3 h-3 text-slate-500" />
-                        <span>{proj.address}</span>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+              <Card className="col-span-4">
+                <CardHeader>
+                  <CardTitle>Budget vs Actual</CardTitle>
+                  <CardDescription>
+                    Comparing planned budget vs actual expenses across projects.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pl-2">
+                  <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                    <BarChart data={budgetVsActualData}>
+                      <XAxis
+                        dataKey="name"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `$${value / 1000}k`}
+                      />
+                      <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
+                      <Bar dataKey="budget" fill="var(--color-budget)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="actual" fill="var(--color-actual)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+              <Card className="col-span-3">
+                <CardHeader>
+                  <CardTitle>Active Projects</CardTitle>
+                  <CardDescription>
+                    Status of currently running construction projects.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-8">
+                    {projects.map((proj) => (
+                      <div key={proj.id} className="flex items-center">
+                        <Avatar className="h-9 w-9 bg-primary/10">
+                          <AvatarFallback className="text-primary font-bold">{proj.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="ml-4 space-y-1 w-full">
+                          <p className="text-sm font-medium leading-none">{proj.name}</p>
+                          <p className="text-sm text-muted-foreground truncate w-48">
+                            {proj.address}
+                          </p>
+                        </div>
+                        <div className="ml-auto font-medium">
+                          {proj.status === 'in_progress' ? (
+                            <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">In Progress</Badge>
+                          ) : proj.status === 'delayed' ? (
+                            <Badge variant="outline" className="text-rose-500 border-rose-500/30">Delayed</Badge>
+                          ) : (
+                            <Badge variant="outline">Planning</Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {getStatusBadge(proj.status)}
+                    ))}
                   </div>
-
-                  <p className="text-[11px] text-slate-400 leading-relaxed truncate">{proj.description}</p>
-
-                  <div className="space-y-1.5 pt-2 border-t border-slate-900/60">
-                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
-                      <span>CONSTRUCTION PROGRESS</span>
-                      <span className="text-white">{proj.progress}%</span>
-                    </div>
-                    <div className="w-full bg-slate-900 rounded-full h-1.5">
-                      <div
-                        className="bg-gradient-to-r from-cyan-400 to-indigo-500 h-1.5 rounded-full"
-                        style={{ width: `${proj.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-slate-500" />
-                      <span>Starts: {proj.start_date}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-500" />
-                      <span>Budget: ${(proj.budget / 1000).toLocaleString()}K</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </main>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

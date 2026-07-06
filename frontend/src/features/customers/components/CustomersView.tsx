@@ -1,6 +1,5 @@
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import React from 'react';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,26 +25,23 @@ export function CustomersView() {
   } = useCustomers();
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-hidden pl-64">
-        <TopNav />
-        <main className="flex-1 p-8 pt-24 space-y-6 overflow-y-auto">
+    <DashboardLayout>
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">
               Customers Dashboard
             </h1>
             <Button onClick={() => handleOpenModal()}>+ New Customer</Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="glass-panel border-white/10">
+            <Card>
               <CardContent className="pt-6">
                 <div className="text-sm text-neutral-400 mb-1">Total Customers</div>
                 <div className="text-3xl font-bold">{metrics.totalCustomers}</div>
               </CardContent>
             </Card>
-            <Card className="glass-panel border-white/10">
+            <Card>
               <CardContent className="pt-6">
                 <div className="text-sm text-neutral-400 mb-1">Active Leads</div>
                 <div className="text-3xl font-bold text-emerald-400">{metrics.activeLeads}</div>
@@ -53,7 +49,7 @@ export function CustomersView() {
             </Card>
           </div>
 
-          <Card className="glass-panel border-white/10 mt-6">
+          <Card className="mt-6">
             <CardHeader>
               <CardTitle>Customer Directory</CardTitle>
             </CardHeader>
@@ -97,8 +93,7 @@ export function CustomersView() {
               </div>
             </CardContent>
           </Card>
-        </main>
-      </div>
+        </div>
 
       <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
@@ -147,13 +142,13 @@ export function CustomersView() {
                 onChange={(e) => setFormData({...formData, identity_card_number: e.target.value})} 
               />
             </div>
-            <DialogFooter className="mt-6 pt-4 border-t border-white/10">
+            <DialogFooter className="mt-6 pt-4 border-t">
               <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancel</Button>
               <Button type="submit">{editingCustomer ? 'Save Changes' : 'Create Customer'}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </DashboardLayout>
   );
 }

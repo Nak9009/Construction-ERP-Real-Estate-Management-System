@@ -1,6 +1,5 @@
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import React from 'react';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopNav } from '@/components/layout/TopNav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAi } from '../hooks/useAi';
 
@@ -8,18 +7,15 @@ export function AiView() {
   const { data, loading } = useAi();
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-hidden pl-64">
-        <TopNav />
-        <main className="flex-1 p-8 pt-24 space-y-6 overflow-y-auto">
+    <DashboardLayout>
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">
               AI Insights
             </h1>
           </div>
 
-          <Card className="glass-panel border-white/10 mt-6">
+          <Card className="mt-6">
             <CardHeader>
               <CardTitle>Overview</CardTitle>
             </CardHeader>
@@ -33,8 +29,7 @@ export function AiView() {
               )}
             </CardContent>
           </Card>
-        </main>
-      </div>
-    </div>
+        </div>
+      </DashboardLayout>
   );
 }
