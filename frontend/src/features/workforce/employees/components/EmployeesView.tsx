@@ -7,12 +7,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatsCard } from '@/components/ui/StatsCard';
 import { UserCircle, ShieldCheck, Activity } from 'lucide-react';
 import { useEmployees } from '../hooks/useEmployees';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function EmployeesView() {
   const {
     data,
     loading,
-    totalEmployees
+    totalEmployees,
+    isModalOpen,
+    editingEmployee,
+    formData,
+    setFormData,
+    handleOpenModal,
+    handleOpenChange,
+    handleSubmit,
+    handleDelete,
   } = useEmployees();
 
   return (
@@ -22,7 +33,12 @@ export function EmployeesView() {
             <h1 className="text-3xl font-bold text-foreground tracking-tight">
               Employee Directory
             </h1>
-            <Button className="bg-cyan-600 hover:bg-cyan-500 text-white border-0 shadow-lg shadow-cyan-900/50">+ Add Employee</Button>
+            <Button 
+              onClick={() => handleOpenModal()} 
+              className="bg-cyan-600 hover:bg-cyan-500 text-white border-0 shadow-lg shadow-cyan-900/50"
+            >
+              + Add Employee
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -79,11 +95,26 @@ export function EmployeesView() {
                           <TableCell>{item.contact || item.phone || 'N/A'}</TableCell>
                           <TableCell>
                             <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
-                              {item.status.replace('_', ' ')}
+                              {item.status ? item.status.replace('_', ' ') : 'Unknown'}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" className="h-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/50">Edit</Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleOpenModal(item)}
+                              className="h-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/50"
+                            >
+                              Edit
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDelete(item.id)}
+                              className="h-8 text-red-400 hover:text-red-300 hover:bg-red-950/50 ml-2"
+                            >
+                              Delete
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))
@@ -94,6 +125,98 @@ export function EmployeesView() {
             </CardContent>
           </Card>
         </div>
+
+        <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>{editingEmployee ? 'Edit Employee' : 'Add Employee'}</DialogTitle>
+              <DialogDescription>
+                {editingEmployee ? 'Update the details for this employee.' : 'Enter the details for the new employee.'}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="first_name" className="text-right">
+                    First Name
+                  </Label>
+                  <Input
+                    id="first_name"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="last_name" className="text-right">
+                    Last Name
+                  </Label>
+                  <Input
+                    id="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="position" className="text-right">
+                    Position
+                  </Label>
+                  <Input
+                    id="position"
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="status" className="text-right">
+                    Status
+                  </Label>
+                  <select
+                    id="status"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="terminated">Terminated</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="phone" className="text-right">
+                    Phone
+                  </Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">{editingEmployee ? 'Save changes' : 'Add Employee'}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </DashboardLayout>
   );
 }

@@ -75,6 +75,8 @@ Route::prefix('v1')->group(function () {
         // Workforce
         Route::get('workforce/employees', [WorkforceController::class, 'indexEmployees']);
         Route::post('workforce/employees', [WorkforceController::class, 'storeEmployee']);
+        Route::put('workforce/employees/{employee}', [WorkforceController::class, 'updateEmployee']);
+        Route::delete('workforce/employees/{employee}', [WorkforceController::class, 'destroyEmployee']);
         Route::get('workforce/contractors', [WorkforceController::class, 'indexContractors']);
         Route::post('workforce/contractors', [WorkforceController::class, 'storeContractor']);
         Route::post('workforce/attendance', [WorkforceController::class, 'logAttendance']);

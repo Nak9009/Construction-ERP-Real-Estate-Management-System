@@ -43,7 +43,11 @@ class WorkforceController extends Controller
             'salary' => 'nullable|numeric',
             'hire_date' => 'nullable|date',
             'status' => 'nullable|string|in:active,inactive,terminated',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:255',
         ]);
+
+        $validated['employee_number'] = 'EMP-' . strtoupper(\Illuminate\Support\Str::random(6));
 
         $employee = Employee::create($validated);
 
@@ -51,6 +55,45 @@ class WorkforceController extends Controller
             'message' => 'Employee created successfully',
             'employee' => new EmployeeResource($employee)
         ], 201);
+    }
+
+    /**
+     * Update an existing employee.
+     */
+    public function updateEmployee(Request $request, Employee $employee)
+    {
+        $this->authorize('update_employees');
+
+        $validated = $request->validate([
+            'first_name' => 'sometimes|required|string|max:255',
+            'last_name' => 'sometimes|required|string|max:255',
+            'position' => 'sometimes|required|string|max:255',
+            'department_id' => 'nullable|uuid',
+            'salary' => 'nullable|numeric',
+            'hire_date' => 'nullable|date',
+            'status' => 'nullable|string|in:active,inactive,terminated',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:255',
+        ]);
+
+        $employee->update($validated);
+
+        return response()->json([
+            'message' => 'Employee updated successfully',
+            'employee' => new EmployeeResource($employee)
+        ]);
+    }
+
+    /**
+     * Remove the specified employee.
+     */
+    public function destroyEmployee(Employee $employee)
+    {
+        $this->authorize('delete_employees');
+
+        $employee->delete();
+
+        return response()->json(['message' => 'Employee deleted successfully']);
     }
 
     /**

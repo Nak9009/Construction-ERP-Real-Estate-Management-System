@@ -10,6 +10,10 @@ import {
   AlertTriangle,
   Download
 } from 'lucide-react';
+import { format, subDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import api from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -49,57 +53,28 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    active_projects: 3,
-    total_houses: 120,
-    houses_completed: 45,
-    houses_under_construction: 65,
-    delayed_projects: 1,
-    total_budget: 2500000.00,
-    total_expenses: 1280000.00,
-    budget_used_percentage: 51.2
+    active_projects: 0,
+    total_houses: 0,
+    houses_completed: 0,
+    houses_under_construction: 0,
+    delayed_projects: 0,
+    total_budget: 0,
+    total_expenses: 0,
+    budget_used_percentage: 0
   });
 
-  const [projects, setProjects] = useState([
-    {
-      id: '1',
-      name: 'Green City Phase 1',
-      address: 'Chroy Changvar District, Phnom Penh',
-      budget: 2500000.00,
-      start_date: '2026-01-01',
-      end_date: '2027-12-31',
-      status: 'in_progress',
-      progress: 62,
-      description: 'A boutique gated community featuring 120 modern luxury homes.'
-    },
-    {
-      id: '2',
-      name: 'Borey Mekong Royal',
-      address: 'National Road 6A, Phnom Penh',
-      budget: 4800000.00,
-      start_date: '2025-06-01',
-      end_date: '2027-06-01',
-      status: 'delayed',
-      progress: 40,
-      description: 'High-end mixed residential development.'
-    },
-    {
-      id: '3',
-      name: 'Sen Sok Plaza & Residences',
-      address: 'Sen Sok, Phnom Penh',
-      budget: 1500000.00,
-      start_date: '2026-03-01',
-      end_date: '2026-12-31',
-      status: 'planning',
-      progress: 5,
-      description: 'Commercial strip mall and residential townhouses.'
-    }
-  ]);
+  const [projects, setProjects] = useState<any[]>([]);
 
-  const budgetVsActualData = [
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  });
+
+  const [budgetVsActualData, setBudgetVsActualData] = useState([
     { name: 'Green City', budget: 2500000, actual: 1280000 },
     { name: 'Mekong Royal', budget: 4800000, actual: 2900000 },
     { name: 'Sen Sok', budget: 1500000, actual: 150000 },
-  ];
+  ]);
 
   const chartConfig = {
     budget: {
@@ -116,9 +91,22 @@ export default function DashboardPage() {
     // Attempt to load live data if authenticated
     const fetchDashboardData = async () => {
       try {
-        const res = await api.get('/dashboard');
+        const [res, projectsRes] = await Promise.all([
+          api.get('/dashboard'),
+          api.get('/projects')
+        ]);
+        
         if (res.data) {
-          setStats(res.data.widgets);
+          if (res.data.widgets) {
+            setStats(res.data.widgets);
+          }
+          if (res.data.charts?.project_budget_vs_actual) {
+            setBudgetVsActualData(res.data.charts.project_budget_vs_actual);
+          }
+        }
+        
+        if (projectsRes.data?.data) {
+          setProjects(projectsRes.data.data);
         }
       } catch (err) {
         console.warn('Could not fetch live dashboard stats, fallback to mock data', err);
@@ -136,10 +124,35 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" className="hidden sm:flex">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              Jan 20, 2026 - Feb 09, 2026
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="hidden sm:flex w-[260px] justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "LLL dd, y")} -{" "}
+                        {format(dateRange.to, "LLL dd, y")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "LLL dd, y")
+                    )
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
             <Button>
               <Download className="mr-2 h-4 w-4" />
               Download
@@ -149,15 +162,9 @@ export default function DashboardPage() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="analytics" disabled>
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="projects" disabled>
-              Projects
-            </TabsTrigger>
-            <TabsTrigger value="reports" disabled>
-              Reports
-            </TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -293,6 +300,21 @@ export default function DashboardPage() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed">
+              <p className="text-muted-foreground">Analytics content goes here.</p>
+            </div>
+          </TabsContent>
+          <TabsContent value="projects" className="space-y-4">
+            <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed">
+              <p className="text-muted-foreground">Projects content goes here.</p>
+            </div>
+          </TabsContent>
+          <TabsContent value="reports" className="space-y-4">
+            <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed">
+              <p className="text-muted-foreground">Reports content goes here.</p>
             </div>
           </TabsContent>
         </Tabs>
