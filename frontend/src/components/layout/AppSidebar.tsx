@@ -43,7 +43,8 @@ import {
   Wrench,
   Folders,
   ClipboardList,
-  Building2
+  Building2,
+  Layers
 } from "lucide-react";
 
 type NavItem = {
@@ -74,6 +75,8 @@ const navGroups: NavGroup[] = [
   {
     title: 'Inventory',
     items: [
+      { name: 'Live Floor Map', href: '/inventory/live-floor-map', icon: Layers },
+      { name: 'Lot Map', href: '/inventory/lot-map', icon: MapPin },
       { name: 'Land', href: '/inventory/land', icon: MapPin },
       { name: 'Houses', href: '/inventory/houses', icon: Home },
     ]

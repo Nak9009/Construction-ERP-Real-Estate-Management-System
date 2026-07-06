@@ -44,6 +44,11 @@ class House extends Model
         return $this->hasMany(\App\Domain\Construction\Models\ConstructionStage::class);
     }
 
+    public function floors()
+    {
+        return $this->hasMany(Floor::class);
+    }
+
     public function warranty()
     {
         return $this->hasOne(\App\Domain\Warranty\Models\Warranty::class);

@@ -57,7 +57,7 @@ class LandController extends Controller
         // $this->authorize('view_lands');
 
         return response()->json([
-            'land' => $land->load(['blocks.lots', 'project'])
+            'land' => $land->load(['blocks.lots.house', 'project'])
         ]);
     }
 

@@ -131,4 +131,37 @@ class HouseController extends Controller
         $house->delete();
         return response()->json(null, 204);
     }
+
+    // --- LIVE FLOOR MAP ---
+    public function floors(House $house)
+    {
+        return response()->json([
+            'floors' => $house->floors()->with(['rooms.stages'])->get()
+        ]);
+    }
+
+    public function roomDetails(\App\Domain\House\Models\Room $room)
+    {
+        return response()->json([
+            'room' => $room->load(['stages'])
+        ]);
+    }
+
+    public function updateRoomStage(Request $request, \App\Domain\House\Models\RoomStage $stage)
+    {
+        $validated = $request->validate([
+            'progress_pct' => 'required|numeric|min:0|max:100',
+            'status' => 'required|string|in:completed,in_progress,delayed,not_started',
+        ]);
+
+        $stage->update($validated);
+
+        // Broadcast event would go here for WebSocket
+        // event(new \App\Events\RoomStageUpdatedEvent($stage));
+
+        return response()->json([
+            'message' => 'Stage updated successfully',
+            'stage' => $stage
+        ]);
+    }
 }
